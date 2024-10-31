@@ -2,38 +2,93 @@
 
 <PageTitle>DEMO</PageTitle>
 
-
 <ConfirmModal @ref="confirmModal" Title="Warning"
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 
-@* <NotificationModalAsync @ref="notificationModalAsync" /> *@
-
+<NotificationModal @ref="notificationModal" />
 
 
 <div class="m-5">
-    <label>Confirmation Modal demo:</label>
+    <label>Confirmation Modal Demo:</label>
     <button class="btn btn-primary" @onclick="ConfirmButton">
         Confirm Test
     </button>
     <p class="mt-3" style="font-size: 1.25rem;">Confirmation Message: @Message</p>
     <hr>
+    <label>Notification Modal demo:</label>
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowInfoNotification">
+                Show Info Popup
+            </button>
+        </div>
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowWarningNotification">
+                Show Warning Popup
+            </button>
+        </div>
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowSuccessNotification">
+                Show Success Popup
+            </button>
+        </div>
+        <div class="col">
+            <button class="btn btn-primary" @onclick="ShowErrorNotification">
+                Show Error Popup
+            </button>
+        </div>
+    </div>
+    <hr>
+    <label>Cooldown Timer Demo:</label>
+    <button disabled="@(cooldownTimer?.IsCoolingDown ?? false)" class="btn btn-primary" @onclick="IncrementAttempt">
+        @* @if (cooldownTimer?.IsCoolingDown ?? false)
+        {
+            <span class="spinner-border spinner-border-sm mr-1"></span>
+        } *@
+        Click Me
+    </button>
+    <CooldownTimer @ref="cooldownTimer" CooldownTime="10" MaxAttempts="5" OnCooldownComplete="()=>StateHasChanged()" />
+
 </div>
 
 @code {
-    private ConfirmModal confirmModal { get; set; }
-    //private NotificationModalAsync notificationModalAsync {get; set;}
-
-
+    private ConfirmModal confirmModal = default!;
+    private NotificationModal notificationModal = default!;
+    private CooldownTimer cooldownTimer = default!;
     private string Message { get; set; } = "";
+
+    //protected override void OnAfterRender(bool firstRender)
+    //{
+    //    if (!firstRender)
+    //    {
+    //       Console.WriteLine(cooldownTimer.IsCoolingDown);
+    //    }
+    //}
+
+    private async Task IncrementAttempt()
+    {
+        cooldownTimer.IncrementSubmissionCount();
+    }
 
     private async Task ConfirmButton()
     {
         var response = await confirmModal.ShowAsync();
         Message = response ? "confirmed" : "canceled";
     }
-
-    //private async Task ShowNotification()
-    //{
-    //    await notificationModalAsync.ShowAsync("Notice!", responseContent.Message, ModalType.ERROR);
-    //}
+    private async Task ShowInfoNotification()
+    {
+        await notificationModal.ShowInfoAsync("Notice!", "This an info popup");
+    }
+    private async Task ShowWarningNotification()
+    {
+        await notificationModal.ShowWarningAsync("Warning!", "This a Warning popup");
+    }
+    private async Task ShowErrorNotification()
+    {
+        await notificationModal.ShowErrorAsync("Notice!", "This an Error popup");
+    }
+    private async Task ShowSuccessNotification()
+    {
+        await notificationModal.ShowSuccessAsync("Notice!", "This a succcess popup");
+    }
 }

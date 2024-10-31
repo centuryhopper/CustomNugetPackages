@@ -1,8 +1,9 @@
 @using System.Timers
+@implements IDisposable
 
 @if (isCoolingDown)
 {
-    <p class="text-bg-warning" style="font-size: medium;">Please wait @remainingSeconds seconds before trying again.</p>
+    <p class="text-danger" style="font-size: medium;">Please wait @remainingSeconds seconds before trying again.</p>
 }
 
 @code {
@@ -24,7 +25,7 @@
     {
         submissionCount++;
 
-        Console.WriteLine(submissionCount);
+        //Console.WriteLine(submissionCount);
 
         if (submissionCount >= MaxAttempts)
         {
@@ -32,7 +33,7 @@
         }
     }
 
-    public void ResetSubmissionCount()
+    private void ResetSubmissionCount()
     {
         submissionCount = 0;
     }
