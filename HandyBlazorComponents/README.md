@@ -15,9 +15,14 @@ A collection of reusable Blazor components designed to simplify the development 
 
 Here’s a list of the components included in this library:
 
-- **ConfirmModal**: Brief description.
-- **CooldownTimer**: Brief description.
-- **CustomPagination**: Brief description.
+- **ConfirmModal**:
+  - This is a pop up that gives you a chance to either confirm the choice you just make or change your mind on it.
+- **NotificationModal**:
+  - This is a pop up that allows you to customize information to display to the end user.
+- **CooldownTimer**:
+  - This is a tool that you can use to time out users (or hackers) who repeatedly try to access a secure resource.
+- **CustomPagination**:
+  - This is a tool that you can use to break up your collections into multiple pages
 
 More will be added as per request, so feel free to create an issue.
 Contributions are welcome as well! Just create a pull request and I will take a look.
@@ -26,8 +31,4 @@ Contributions are welcome as well! Just create a pull request and I will take a 
 
 Install via NuGet Package Manager:
 
-- dotnet add package HandyBlazorComponents --version x.x.x
-
-# or directly add it to your .csproj file
-
-- <PackageReference Include="HandyBlazorComponents" Version="x.x.x" />
+- dotnet add package HandyBlazorComponents
