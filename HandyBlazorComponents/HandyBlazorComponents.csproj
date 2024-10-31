@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>HandyBlazorComponents</PackageId>
+    <Version>1.0.1</Version>
+    <Authors>rogue_dotnet_developer</Authors>
+    <Product>Blazor Components</Product>
+    <Description>This package was created for developers' convenience and to utilize to speed up and ease their development process.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl></PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- <PackageIcon>icon.png</PackageIcon> -->
+    <PackageTags>Blazor</PackageTags>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <None Update="README.md">
+        <Pack>true</Pack>
+        <!-- we don't need a package path unless readme was in a subdirectory. In this case it's in the same directory as the .csproj file-->
+        <PackagePath></PackagePath>
+    </None>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
+  </ItemGroup>
+
+</Project>
