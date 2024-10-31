@@ -49,9 +49,56 @@
     </button>
     <CooldownTimer @ref="cooldownTimer" CooldownTime="10" MaxAttempts="5" OnCooldownComplete="()=>StateHasChanged()" />
 
+    <hr>
+    <div>HandyGrid demo:</div>
+
+    <HandyGrid Items="TestLst" OnAction="OnAction"/>
+
 </div>
 
 @code {
+    private class TestClass
+    {
+        public int Id {get;set;}
+        public string Title {get;set;}
+        public string Description {get;set;}
+
+        public override string ToString()
+        {
+            return $"{Id}, {Title}, {Description}";
+        }
+    }
+    private List<TestClass> TestLst = [
+        new TestClass { Id=0, Title = "Title1", Description = "Description1",},
+        new TestClass { Id=1, Title = "Title2", Description = "Description2",}
+    ];
+
+    private async Task OnAction((object, string) data)
+    {
+        object obj = data.Item1;
+        var actionType = data.Item2;
+        switch (actionType)
+        {
+            case "update":
+                for (int i = 0; i < TestLst.Count; i++)
+                {
+                    if (TestLst[i].Id == ((TestClass) obj).Id)
+                    {
+                        TestLst[i].Title = ((TestClass) obj).Title;
+                        TestLst[i].Description = ((TestClass) obj).Description;
+                    }
+                }
+                break;
+            case "delete":
+                var response = await confirmModal.ShowAsync();
+                TestLst = TestLst.Where(o=>o.Id != ((TestClass) obj).Id).ToList();
+                break;
+        }
+        
+
+        TestLst.ForEach(c=>Console.WriteLine(c));
+    }
+
     private ConfirmModal confirmModal = default!;
     private NotificationModal notificationModal = default!;
     private CooldownTimer cooldownTimer = default!;

@@ -1,0 +1,187 @@
+@typeparam TItem
+
+@* TODO: work on adding rows to grid using a popup (use add passwords razor component as a guide) and also work on pagination and filtering and sorting *@
+
+<div class="text-center overflow-auto m-3">
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>
+                    Row #
+                </th>
+                <th>
+                    Actions
+                </th>
+                @foreach (var column in Columns)
+                {
+                    <th>
+                        <button @onclick="@(() => OnSortData.InvokeAsync(column))" class="btn btn-primary">
+                            @column @GetSortIcon(column)
+                        </button>
+                        <TextInputFilter Value="@GetFilterValue(column)" ValueChanged="@(value => SetFilterValue(column, value))" PlaceHolder=@($"Filter by {column}") />
+                    </th>
+                }
+                <th>UPDATE</th>
+                <th>DELETE</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Items.Count;i++) 
+            {
+                int cur = i;
+                <tr>
+                    <td>
+                        <div style="width: 2.5rem;">
+                            @cur
+                        </div>
+                    </td>
+                    <td>
+                        @if (AllowEdits[cur])
+                        {
+                            <button @onclick="@(() => CancelEdit(cur))" class="btn btn-primary">Cancel</button>
+                        }
+                        else
+                        {
+                            <button @onclick="@(() => BeginEdit(cur))" class="btn btn-primary">Edit</button>
+                        }
+                    </td>
+                    @foreach (var column in Columns)
+                    {
+                        <td>
+                            @if (AllowEdits[cur])
+                            {
+                                <div class="d-flex align-items-center p-3">
+                                    <input value="@(GetPropertyValue(Items[cur], column))" @oninput="(e) => SetPropertyValue(Items[cur], e.Value, column)" class="form-control" style="width: 10rem" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="d-flex align-items-center p-4">
+                                    <span class="m-3">@(GetPropertyValue(Items[cur], column))</span>
+                                </div>
+                            }
+                        </td>
+                    }
+
+                    <td>
+                        <button disabled="@(!AllowEdits[cur])" @onclick="@(() => UpdateRow(Items[cur]))" class="btn btn-primary">Update</button>
+                    </td>
+                    <td>
+                        <button @onclick="@(() => DeleteRow(Items[cur]))" class="btn btn-danger">DELETE</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<ConfirmModal @ref="confirmModal" Title="Warning"
+    BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
+<CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="OnPageChanged" />
+
+@code {
+    [Parameter]
+    public List<TItem> Items { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<string> OnSortData { get; set; }
+
+    [Parameter]
+    public Func<TItem, string, object?>? GetCellValue { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnPageChanged { get; set; }
+
+
+    [Parameter]
+    public EventCallback<(object, string)> OnAction { get; set; }
+    
+
+    [Parameter]
+    public bool AllowEdit { get; set; } = false;
+
+    List<bool> AllowEdits = new();
+
+    [Parameter]
+    public int CurrentPage { get; set; } = 1;
+
+    private const int pageSize = 5; // Number of items per page
+    private int TotalPages => (int) Math.Ceiling((double) Items.Count / pageSize);
+
+    private List<string>? Columns {get;set;}
+    private Dictionary<string, int> editingIds {get;set;}
+
+    ConfirmModal confirmModal = default!;
+
+    protected override void OnInitialized()
+    {
+        Columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
+        AllowEdits = Enumerable.Repeat(false, Columns.Count).ToList();
+        //Columns.ForEach(c=>Console.WriteLine(c));
+        editingIds = Columns.Select((value, index) => new { index, value }).ToDictionary(o => o.value, _ => -1);
+    }
+
+    private object? GetPropertyValue(TItem item, string propertyName)
+    {
+        return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+    }
+
+    private void SetPropertyValue(TItem item, object? value, string propertyName)
+    {
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property != null && property.CanWrite && value != null)
+        {
+            property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
+        }
+    }
+
+    private async Task UpdateRow(TItem item)
+    {
+        AllowEdit = false;
+        await OnAction.InvokeAsync((item, "update"));
+    }
+
+    private async Task DeleteRow(TItem item)
+    {
+        var response = await confirmModal.ShowAsync();
+        if (response)
+        {
+            AllowEdit = false;
+            await OnAction.InvokeAsync((item, "delete"));
+        }
+    }
+
+    private void CancelEdit(int cur)
+    {
+        AllowEdits[cur] = false;
+    }
+
+    private async Task BeginEdit(int cur)
+    {
+        AllowEdits[cur] = true;
+
+        // reset editingIds
+        //editingIds = editingIds.ToDictionary(kvp=>kvp.Key, _ => cur);
+    }
+
+
+    private string GetFilterValue(string column) => FilterValues.ContainsKey(column) ? FilterValues[column] : "";
+
+    private void SetFilterValue(string column, string value)
+    {
+        FilterValues[column] = value;
+        FilterItems();
+    }
+
+    private Dictionary<string, string> FilterValues { get; set; } = new();
+
+    private void FilterItems()
+    {
+        // Filtering logic based on FilterValues
+    }
+
+    private string GetSortIcon(string column)
+    {
+        // Logic to determine the sort icon based on the column
+        return string.Empty;
+    }
+}
