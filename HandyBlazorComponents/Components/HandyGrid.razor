@@ -2,8 +2,7 @@
 @using System.Linq.Expressions
 
 
-@* TODO: work on adding rows to grid using a popup (use add passwords razor component as a guide) and also work on DONE***
-pagination and filtering and sorting *@
+@* This grid has pagination and filtering and sorting along with all CRUD operations *@
 
 <div class="text-center overflow-auto m-3">
     <table class="table table-striped table-bordered">
@@ -82,7 +81,7 @@ pagination and filtering and sorting *@
 </div>
 <ConfirmModal @ref="confirmModal" Title="Warning"
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
-<CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="HandlePageChange" />
+<CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="OnPageChanged" />
 
 <AddItemsModal TItem="TItem"  @ref="addItemsModal" />
 
@@ -99,9 +98,6 @@ pagination and filtering and sorting *@
     public EventCallback<(object, string)> OnAction { get; set; }
 
 
-    [Parameter]
-    public bool AllowEdit { get; set; } = false;
-
 
     [Parameter]
     public int CurrentPage { get; set; } = 1;
@@ -110,7 +106,6 @@ pagination and filtering and sorting *@
     private int TotalPages => (int)Math.Ceiling((double) filteredItems.Count() / pageSize);
 
     private List<bool> AllowEdits = new();
-    //private List<string> Filters = new();
     private Dictionary<string, string> FilterValues { get; set; } = new();
     private List<string>? Columns { get; set; }
     private IEnumerable<TItem> filteredItems =>
@@ -124,13 +119,17 @@ pagination and filtering and sorting *@
     private async Task AddNewItems()
     {
         ItemsToAdd = await addItemsModal.ShowAsync();
-
-        ItemsToAdd.ForEach(item => Console.WriteLine(item));
+        //ItemsToAdd.ForEach(item => Console.WriteLine(item));
+        if (ItemsToAdd.Any())
+        {
+            await OnAction.InvokeAsync((ItemsToAdd, "create"));
+        }
     }
 
      // Handle page change event
-    private void HandlePageChange(int newPage)
+    private void OnPageChanged(int newPage)
     {
+        Console.WriteLine("newPage: " + newPage);
         CurrentPage = newPage;
         UpdatePagedItems();
         //StateHasChanged();
@@ -168,6 +167,8 @@ pagination and filtering and sorting *@
         }
 
         pagedItems = itemsQuery.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
+        AllowEdits = Enumerable.Repeat(false, pagedItems.Count).ToList();
+
     }
 
     private bool FilterQuery(TItem item)
@@ -184,7 +185,14 @@ pagination and filtering and sorting *@
         return nullOrWhiteSpaceCheck || containsCheck;
     }
 
+    protected override void OnParametersSet()
+    {
+        UpdatePagedItems();
+        
 
+        //Console.WriteLine("parameters changed");
+
+    }
     protected override void OnInitialized()
     {
         Columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
@@ -193,7 +201,6 @@ pagination and filtering and sorting *@
             FilterValues.Add(column, string.Empty);
         }
         UpdatePagedItems();
-        AllowEdits = Enumerable.Repeat(false, pagedItems.Count).ToList();
         //Filters = Enumerable.Repeat(string.Empty, Columns.Count).ToList();
         // Columns.ForEach(c=>Console.WriteLine(c));
     }
@@ -215,18 +222,12 @@ pagination and filtering and sorting *@
 
     private async Task UpdateRow(TItem item)
     {
-        AllowEdit = false;
         await OnAction.InvokeAsync((item, "update"));
     }
 
     private async Task DeleteRow(TItem item)
     {
-        var response = await confirmModal.ShowAsync();
-        if (response)
-        {
-            AllowEdit = false;
-            await OnAction.InvokeAsync((item, "delete"));
-        }
+        await OnAction.InvokeAsync((item, "delete"));
     }
 
     private void CancelEdit(int cur)

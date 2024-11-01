@@ -5,12 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>HandyBlazorComponents</PackageId>
-    <Version>1.0.4</Version>
+    <Version>1.0.9</Version>
     <Authors>rogue_dotnet_developer</Authors>
     <Product>Blazor Components</Product>
     <Description>This package was created for developers' convenience and to utilize to speed up and ease their development process.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl></PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/RogueCoder123/NugetPackages</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- <PackageIcon>icon.png</PackageIcon> -->
     <PackageTags>Blazor</PackageTags>

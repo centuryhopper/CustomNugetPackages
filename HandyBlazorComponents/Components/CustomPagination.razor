@@ -31,7 +31,7 @@
     private void PrevPage()
     {
         // Console.WriteLine(CurrentPage);
-        if (!IsFirstPage)
+        if (CurrentPage > 1)
         {
             OnPageChanged.InvokeAsync(CurrentPage - 1);
         }
@@ -39,8 +39,8 @@
  
     private void NextPage()
     {
-        // Console.WriteLine(CurrentPage);
-        if (!IsLastPage)
+        //Console.WriteLine("CurrentPage: "+ CurrentPage);
+        if (CurrentPage < TotalPages)
         {
             OnPageChanged.InvokeAsync(CurrentPage + 1);
         }

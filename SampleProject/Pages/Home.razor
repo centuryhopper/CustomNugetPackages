@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
 <PageTitle>DEMO</PageTitle>
 
@@ -52,7 +53,14 @@
     <hr>
     <div>HandyGrid demo:</div>
 
-    <HandyGrid Items="TestLst" OnAction="OnAction"/>
+    @if (doneLoadingLst)
+    {
+        <HandyGrid @ref="handyGrid" TItem="TestClass" Items="TestLst" OnAction="OnAction"/>
+    }
+    else
+    {
+        <span class="spinner-border spinner-border-sm mr-1"></span>
+    }
 
 </div>
 
@@ -68,23 +76,33 @@
             return $"{Id}, {Title}, {Description}";
         }
     }
-    private List<TestClass> TestLst = [
-        new TestClass { Id=1, Title = "Title01", Description = "Description01",},
-        new TestClass { Id=2, Title = "Title02", Description = "Description02",},
-        
-        new TestClass { Id=3, Title = "Title03", Description = "Description03",},
-        new TestClass { Id=4, Title = "Title04", Description = "Description04",},
+    private List<TestClass> TestLst {get;set;}
 
-        new TestClass { Id=5, Title = "Title05", Description = "Description05",},
-        new TestClass { Id=6, Title = "Title06", Description = "Description06",},
+    private bool doneLoadingLst = false;
+    private HandyGrid<TestClass> handyGrid = default!;
 
-        new TestClass { Id=7, Title = "Title07", Description = "Description07",},
-        new TestClass { Id=8, Title = "Title08", Description = "Description08",},
+    protected override void OnInitialized()
+    {
+        TestLst = [
+            new TestClass { Id=1, Title = "Title01", Description = "Description01",},
+            new TestClass { Id=2, Title = "Title02", Description = "Description02",},
+            
+            new TestClass { Id=3, Title = "Title03", Description = "Description03",},
+            new TestClass { Id=4, Title = "Title04", Description = "Description04",},
 
-        new TestClass { Id=9, Title = "Title09", Description = "Description09",},
-        new TestClass { Id=10, Title = "Title10", Description = "Description10",},
+            new TestClass { Id=5, Title = "Title05", Description = "Description05",},
+            new TestClass { Id=6, Title = "Title06", Description = "Description06",},
 
-    ];
+            new TestClass { Id=7, Title = "Title07", Description = "Description07",},
+            new TestClass { Id=8, Title = "Title08", Description = "Description08",},
+
+            //new TestClass { Id=9, Title = "Title09", Description = "Description09",},
+            //new TestClass { Id=10, Title = "Title10", Description = "Description10",},
+
+        ];
+
+        doneLoadingLst = true;
+    }
 
     private async Task OnAction((object, string) data)
     {
@@ -103,12 +121,21 @@
                 }
                 break;
             case "delete":
-                var response = await confirmModal.ShowAsync();
-                TestLst = TestLst.Where(o=>o.Id != ((TestClass) obj).Id).ToList();
+                //Console.WriteLine("deleting");
+                //var response = await confirmModal.ShowAsync();
+                if (true)
+                {
+                    TestLst = TestLst.Where(o=>o.Id != ((TestClass) obj).Id).ToList();
+                }
+                break;
+            case "create":
+                //Console.WriteLine("adding");
+                TestLst.AddRange((List<TestClass>) obj);
                 break;
         }
         
-        TestLst.ForEach(c=>Console.WriteLine(c));
+        //TestLst.ForEach(c=>Console.WriteLine(c));
+
     }
 
     private ConfirmModal confirmModal = default!;
