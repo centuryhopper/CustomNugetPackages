@@ -69,8 +69,21 @@
         }
     }
     private List<TestClass> TestLst = [
-        new TestClass { Id=0, Title = "Title1", Description = "Description1",},
-        new TestClass { Id=1, Title = "Title2", Description = "Description2",}
+        new TestClass { Id=1, Title = "Title01", Description = "Description01",},
+        new TestClass { Id=2, Title = "Title02", Description = "Description02",},
+        
+        new TestClass { Id=3, Title = "Title03", Description = "Description03",},
+        new TestClass { Id=4, Title = "Title04", Description = "Description04",},
+
+        new TestClass { Id=5, Title = "Title05", Description = "Description05",},
+        new TestClass { Id=6, Title = "Title06", Description = "Description06",},
+
+        new TestClass { Id=7, Title = "Title07", Description = "Description07",},
+        new TestClass { Id=8, Title = "Title08", Description = "Description08",},
+
+        new TestClass { Id=9, Title = "Title09", Description = "Description09",},
+        new TestClass { Id=10, Title = "Title10", Description = "Description10",},
+
     ];
 
     private async Task OnAction((object, string) data)
@@ -95,7 +108,6 @@
                 break;
         }
         
-
         TestLst.ForEach(c=>Console.WriteLine(c));
     }
 
@@ -103,14 +115,6 @@
     private NotificationModal notificationModal = default!;
     private CooldownTimer cooldownTimer = default!;
     private string Message { get; set; } = "";
-
-    //protected override void OnAfterRender(bool firstRender)
-    //{
-    //    if (!firstRender)
-    //    {
-    //       Console.WriteLine(cooldownTimer.IsCoolingDown);
-    //    }
-    //}
 
     private async Task IncrementAttempt()
     {

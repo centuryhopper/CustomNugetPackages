@@ -21,8 +21,8 @@ Here’s a list of the components included in this library:
   - This is a pop up that allows you to customize information to display to the end user.
 - **CooldownTimer**:
   - This is a tool that you can use to time out users (or hackers) who repeatedly try to access a secure resource.
-- **CustomPagination**:
-  - This is a tool that you can use to break up your collections into multiple pages
+- **HandyGrid**:
+  - This is a tool that you can use to display your collection of items in a grid view and perform crud operations on it. More information coming soon!
 
 More will be added as per request, so feel free to create an issue.
 Contributions are welcome as well! Just create a pull request and I will take a look.
