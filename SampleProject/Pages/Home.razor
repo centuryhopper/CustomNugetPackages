@@ -1,5 +1,8 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
+@* @using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Utils *@
+@using System.Linq
 
 <PageTitle>DEMO</PageTitle>
 
@@ -55,32 +58,285 @@
 
     @if (doneLoadingLst)
     {
-        <HandyGrid @ref="handyGrid" TItem="TestClass" Items="TestLst" OnAction="OnAction"/>
+        <HandyGrid @ref="handyGrid" TItem="TestClass" Items="TestLst" OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete"/>
     }
     else
     {
         <span class="spinner-border spinner-border-sm mr-1"></span>
     }
 
+    <hr>
+    <div>Number only input demo:</div>
+    <input type="number" class="form-control" style="width: 10rem;" onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57)/* || event.charCode == 45 uncomment to allow negative values*/)">
+
+    <hr>
+    @* <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+        @foreach (var state in states)
+        {
+            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSwitch @bind-Value="multiselectionTextChoice" Class="mud-width-full" Color="Color.Primary">MultiSelection Text choice</MudSwitch>
+
+    <button class="btn btn-primary" @onclick="@((e)=>Console.WriteLine(string.Join(",", options)))">Print Values</button> *@
+
+    @* <MudGrid Class="mt-3 px-4">
+        <MudItem xs="6">
+            <MudText Typo="Typo.subtitle2">Value:</MudText>
+            <MudText Typo="Typo.subtitle2">"</MudText>
+            <MudText Typo="Typo.body2" Class="pl-4">@value</MudText>
+            <MudText Typo="Typo.subtitle2">"</MudText>
+        </MudItem>
+        <MudItem xs="6">
+            <MudText Typo="Typo.subtitle2">SelectedValues: HashSet&lt;string&gt;</MudText>
+            <MudText Typo="Typo.subtitle2">{</MudText>
+            <MudText Typo="Typo.body2" Class="pl-4">@(string.Join(", ", options.Select(x=>$"\"{x}\"")))</MudText>
+            <MudText Typo="Typo.subtitle2">}</MudText>
+        </MudItem>
+    </MudGrid> *@
+    <hr>
+@* 
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+                <td>
+                    <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" MultiSelection="true" @bind-Value="value" @bind-SelectedValues="options" T="string" Label="US States" AdornmentIcon="@Icons.Material.Filled.Search" AnchorOrigin="Origin.BottomCenter" style="width: 10rem;">
+                        @foreach (var state in states)
+                        {
+                            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                        }
+                    </MudSelect>
+                </td>
+            </tr>
+        </tbody>
+    </table> *@
+
+    <hr>
+    <div>Dynamic HandyGrid demo:</div>
+
+    @if (doneLoadingLst)
+    {
+        <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" Items="TestLst" OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" ColumnItems="ColumnItems"/>
+    }
+    else
+    {
+        <span class="spinner-border spinner-border-sm mr-1"></span>
+    }
+
+    <hr>
+    <h3>Multiselect demo:</h3>
+    <MultiSelectCheckBoxList
+        Items="@states.ToList()"
+        SelectedItems="@SelectedStates"
+        SelectedItemsChanged="@SetLst"
+        Placeholder="Select States" />
+
+    <div>Selected States:</div>
+    <ul>
+        @foreach (var state in SelectedStates)
+        {
+            <li>@state</li>
+        }
+    </ul>
+
 </div>
 
 @code {
-    //private ModalType modalType;
+
+    private void SetLst(IEnumerable<string> newLst)
+    {
+        SelectedStates = newLst;
+    }
+
+    private IEnumerable<string> SelectedStates { get; set; } = new List<string>();
     private class TestClass
     {
         public int Id {get;set;}
         public string Title {get;set;}
         public string Description {get;set;}
+        public IEnumerable<string> Descriptions {get;set;}
 
         public override string ToString()
         {
             return $"{Id}, {Title}, {Description}";
         }
     }
+    private Dictionary<string, RenderFragment<TestClass>> ColumnItems => new()
+    {
+        {
+            "Id",
+            o => @<input class="form-control" @bind="o.Id" placeholder="Enter Id" />
+        },
+        {
+            "Title",
+            o => @<input class="form-control" @bind="o.Title" placeholder="Enter Title" />
+        },
+        {
+            "Description",
+            o => @<input class="form-control" @bind="o.Description" placeholder="Enter Title" />
+        },
+        //{
+        //    "Descriptions",
+        //    o => @<MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" 
+        //                MultiSelection="true" 
+        //                @bind-SelectedValues="o.Descriptions"
+        //                T="string" 
+        //                Label="US States" 
+        //                AdornmentIcon="@Icons.Material.Filled.Search" 
+        //                AnchorOrigin="Origin.BottomCenter" 
+        //                style="width: 10rem;">
+        //        @foreach (var state in states)
+        //        {
+        //            <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+        //        }
+        //    </MudSelect>
+        //}
+    };
+    private bool multiselectionTextChoice;
+    private string value { get; set; } = "Nothing selected";
+    private IEnumerable<string> options { get; set; } = new HashSet<string>() { "Alaska" };
+
+    private string[] states =
+    {
+        "Alabama", "Alaska", "American Samoa", "Arizona",
+        "Arkansas", "California", "Colorado", "Connecticut",
+        "Delaware", "District of Columbia", "Federated States of Micronesia",
+        "Florida", "Georgia", "Guam", "Hawaii", "Idaho",
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Marshall Islands", "Maryland",
+        "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+        "Missouri", "Montana", "Nebraska", "Nevada",
+        "New Hampshire", "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Northern Mariana Islands", "Ohio",
+        "Oklahoma", "Oregon", "Palau", "Pennsylvania", "Puerto Rico",
+        "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
+        "Texas", "Utah", "Vermont", "Virgin Island", "Virginia",
+        "Washington", "West Virginia", "Wisconsin", "Wyoming",
+    };
+
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        if (multiselectionTextChoice)
+        {
+            return $"Selected state{(selectedValues.Count > 1 ? "s" : "")}: {string.Join(", ", selectedValues.Select(x => x))}";
+        }
+        else
+        {
+            return $"{selectedValues.Count} state{(selectedValues.Count > 1 ? "s have":" has")} been selected";
+        }
+    }
+    //private ModalType modalType;
+    
     private List<TestClass> TestLst {get;set;}
 
     private bool doneLoadingLst = false;
     private HandyGrid<TestClass> handyGrid = default!;
+    private DynamicHandyGrid<TestClass> dynamicHandyGrid = default!;
 
     protected override void OnInitialized()
     {
@@ -107,37 +363,31 @@
         doneLoadingLst = true;
     }
 
-    private async Task OnAction((object, string) data)
-    {
-        object obj = data.Item1;
-        var actionType = data.Item2;
-        switch (actionType)
-        {
-            case "update":
-                for (int i = 0; i < TestLst.Count; i++)
-                {
-                    if (TestLst[i].Id == ((TestClass) obj).Id)
-                    {
-                        TestLst[i].Title = ((TestClass) obj).Title;
-                        TestLst[i].Description = ((TestClass) obj).Description;
-                    }
-                }
-                break;
-            case "delete":
-                //Console.WriteLine("deleting");
-                //var response = await confirmModal.ShowAsync();
-                if (true)
-                {
-                    TestLst = TestLst.Where(o=>o.Id != ((TestClass) obj).Id).ToList();
-                }
-                break;
-            case "create":
-                TestLst.AddRange((List<TestClass>) obj);
-                break;
-        }
-        
-        //TestLst.ForEach(c=>Console.WriteLine(c));
 
+    private async Task OnCreate(List<TestClass> items)
+    {
+        TestLst.AddRange(items);
+    }
+
+    private async Task OnDelete(TestClass item)
+    {
+        //var response = await confirmModal.ShowAsync();
+        if (true)
+        {
+            TestLst = TestLst.Where(o=>o.Id != item.Id).ToList();
+        }
+    }
+
+    private async Task OnUpdate(TestClass item)
+    {
+        for (int i = 0; i < TestLst.Count; i++)
+        {
+            if (TestLst[i].Id == item.Id)
+            {
+                TestLst[i].Title = item.Title;
+                TestLst[i].Description = item.Description;
+            }
+        }
     }
 
     private ConfirmModal confirmModal = default!;
