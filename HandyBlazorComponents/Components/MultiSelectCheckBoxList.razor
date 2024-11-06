@@ -1,4 +1,5 @@
 @typeparam TItem
+@inject IJSRuntime jsRuntime
 
 <div class="dropdown">
     <button class="btn btn-secondary dropdown-toggle" type="button" @onclick="ToggleDropdown">
@@ -37,6 +38,21 @@
     public string Placeholder { get; set; } = "Select Items";
 
     private bool isDropdownOpen = false;
+
+    [JSInvokable]
+    public void CloseDropdown()
+    {
+        isDropdownOpen = false;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await jsRuntime.InvokeVoidAsync("dropdownInterop.registerEscapeKeyHandler", DotNetObjectReference.Create(this));
+        }
+    }
 
 
     private async Task OnCheckboxChanged(ChangeEventArgs e, string item)

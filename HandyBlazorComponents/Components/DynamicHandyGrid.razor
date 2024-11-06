@@ -53,8 +53,16 @@
                         <td>
                             @if (AllowEdits[cur] && ColumnItems != null && ColumnItems.TryGetValue(columnName, out var template))
                             {
-                                FragmentRefs[cur] = template;
                                 @template(pagedItems[cur])
+                            }
+                            @* if key not found *@
+                            else if (AllowEdits[cur])
+                            {
+                                <div class="d-flex align-items-center p-3">
+                                    <input value="@(GetPropertyValue(pagedItems[cur], columnName))"
+                                        @oninput="(e) => SetPropertyValue(pagedItems[cur], e.Value, columnName)" class="form-control"
+                                        style="width: 10rem" />
+                                </div>
                             }
                             else
                             {
@@ -63,7 +71,7 @@
                         </td>
                     }
                     <td>
-                        <button disabled="@(!AllowEdits[cur])" @onclick="@(() => UpdateRow(pagedItems[cur], FragmentRefs[cur]))"
+                        <button disabled="@(!AllowEdits[cur])" @onclick="@(() => UpdateRow(pagedItems[cur]))"
                             class="btn btn-primary">Update</button>
                     </td>
                     <td>
@@ -89,8 +97,6 @@
     // Column Templates Dictionary
     [Parameter]
     public Dictionary<string, RenderFragment<TItem>>? ColumnItems { get; set; }
-
-    private RenderFragment<TItem>[] FragmentRefs => new RenderFragment<TItem>[Columns.Count];
 
     [Parameter]
     public List<TItem> Items { get; set; } = new();
@@ -134,7 +140,7 @@
      // Handle page change event
     private void OnPageChanged(int newPage)
     {
-        Console.WriteLine("newPage: " + newPage);
+        //Console.WriteLine("newPage: " + newPage);
         CurrentPage = newPage;
         UpdatePagedItems();
         //StateHasChanged();
@@ -173,6 +179,7 @@
 
         pagedItems = itemsQuery.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
         AllowEdits = Enumerable.Repeat(false, pagedItems.Count).ToList();
+        //Console.WriteLine(AllowEdits.Count);
 
     }
 
@@ -196,7 +203,6 @@
         
 
         // Console.WriteLine("parameters changed");
-
     }
     protected override void OnInitialized()
     {
@@ -231,7 +237,7 @@
         }
     }
 
-    private async Task UpdateRow(TItem item, RenderFragment<TItem> renderFragment)
+    private async Task UpdateRow(TItem item)
     {
         await OnUpdate.InvokeAsync(item);
     }

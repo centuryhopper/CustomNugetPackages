@@ -1,7 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
-@* @using HandyBlazorComponents.Components
-@using HandyBlazorComponents.Utils *@
+@using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Utils
 @using System.Linq
 
 <PageTitle>DEMO</PageTitle>
@@ -53,8 +53,8 @@
     </button>
     <CooldownTimer @ref="cooldownTimer" CooldownTime="10" MaxAttempts="5" OnCooldownComplete="()=>StateHasChanged()" />
 
-    <hr>
-    <div>HandyGrid demo:</div>
+    @* <hr> *@
+    @* <div>HandyGrid demo:</div>
 
     @if (doneLoadingLst)
     {
@@ -63,7 +63,7 @@
     else
     {
         <span class="spinner-border spinner-border-sm mr-1"></span>
-    }
+    } *@
 
     <hr>
     <div>Number only input demo:</div>
@@ -150,7 +150,7 @@
     protected override void OnInitialized()
     {
         TestLst = [
-            new TestClass { Id=1, Title = "Title01", Description = "Description01", Descriptions = [],},
+            new TestClass { Id=1, Title = "Title01", Description = "Description01", Descriptions = ["Texas","Utah","Vermont"],},
             new TestClass { Id=2, Title = "Title02", Description = "Description02", Descriptions = [],},
             
             new TestClass { Id=3, Title = "Title03", Description = "Description03", Descriptions = [],},
@@ -195,8 +195,12 @@
             {
                 TestLst[i].Title = item.Title;
                 TestLst[i].Description = item.Description;
+
+                // TODO: apply changes here to db in real-world scenario as well
             }
         }
+
+        
     }
 
     private ConfirmModal confirmModal = default!;
