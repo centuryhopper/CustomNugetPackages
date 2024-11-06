@@ -85,26 +85,13 @@
 
 @code {
 
-    private void SetLst((TestClass, IEnumerable<string>) data)
-    {
-        //Console.WriteLine(string.Join(",", ));
-        //Console.WriteLine(feedback.ToString());
-        var (obj, newSelections) = data;
-        //var testItem = TestLst.FirstOrDefault(x => x.Id == obj.Id);
-//
-        //if (testItem != null)
-        //{
-        //    testItem.Descriptions = newSelections.ToList();
-        //}
-    }
-
     //private IEnumerable<string> SelectedStates { get; set; } = new List<string>();
     private class TestClass
     {
         public int Id {get;set;}
-        public string Title {get;set;}
-        public string Description {get;set;}
-        public List<string> Descriptions {get;set;}
+        public string Title {get;set;} = string.Empty;
+        public string Description {get;set;} = string.Empty;
+        public List<string> Descriptions {get;set;} = new();
 
         public override string ToString()
         {
@@ -132,7 +119,6 @@
                     CurrentRef="o"
                     Items="states.ToList()"
                     SelectedItems="o.Descriptions"
-                    SelectedItemsChanged="SetLst"
                     Placeholder="Select States" />
         }
     };
@@ -176,12 +162,12 @@
             new TestClass { Id=7, Title = "Title07", Description = "Description07", Descriptions = [],},
             new TestClass { Id=8, Title = "Title08", Description = "Description08", Descriptions = [],},
 
-            //new TestClass { Id=9, Title = "Title09", Description = "Description09",},
-            //new TestClass { Id=10, Title = "Title10", Description = "Description10",},
+            // new TestClass { Id=9, Title = "Title09", Description = "Description09",},
+            // new TestClass { Id=10, Title = "Title10", Description = "Description10",},
 
         ];
 
-        //Console.WriteLine(modalType.ToString());
+        // Console.WriteLine(modalType.ToString());
 
         doneLoadingLst = true;
     }
@@ -194,7 +180,7 @@
 
     private async Task OnDelete(TestClass item)
     {
-        //var response = await confirmModal.ShowAsync();
+        // var response = await confirmModal.ShowAsync();
         if (true)
         {
             TestLst = TestLst.Where(o=>o.Id != item.Id).ToList();

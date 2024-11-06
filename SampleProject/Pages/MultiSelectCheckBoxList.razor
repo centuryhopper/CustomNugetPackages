@@ -1,13 +1,9 @@
 @typeparam TItem
-@implements Selectables
 
 <div class="dropdown">
     <button class="btn btn-secondary dropdown-toggle" type="button" @onclick="ToggleDropdown">
         @Placeholder (@SelectedItems.Count())
     </button>
-    @* <button class="btn btn-primary" type="button" @onclick="ConfirmSelections">
-        Confirm Selections
-    </button> *@
     @if (isDropdownOpen)
     {
         <div class="dropdown-menu show" style="max-height: 200px; overflow-y: auto;">
@@ -42,14 +38,6 @@
 
     private bool isDropdownOpen = false;
 
-    public void ConfirmSelections()
-    {
-        //await SelectedItemsChanged.InvokeAsync((CurrentRef, SelectedItems));
-        foreach(var sel in SelectedItems)
-        {
-            Console.WriteLine(sel);
-        }
-    }
 
     private async Task OnCheckboxChanged(ChangeEventArgs e, string item)
     {

@@ -233,10 +233,6 @@
 
     private async Task UpdateRow(TItem item, RenderFragment<TItem> renderFragment)
     {
-        if (renderFragment is Selectables)
-        {
-            (renderFragment as Selectables).ConfirmSelections();
-        }
         await OnUpdate.InvokeAsync(item);
     }
 

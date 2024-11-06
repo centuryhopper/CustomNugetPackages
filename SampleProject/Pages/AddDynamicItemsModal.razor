@@ -49,7 +49,7 @@
                                             <td>
                                                 <button type="button" class="btn btn-danger" @onclick="(() => RemoveItem(ItemsToAdd[cur]))">Remove</button>
                                             </td>
-                                        </tr>                
+                                        </tr>
                                     }
                                 </tbody>
                             </table>
@@ -81,11 +81,13 @@
     protected override void OnInitialized()
     {
         Columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
+        var tmp = ColumnItems;
     }
 
     private void AddItem()
     {
-        ItemsToAdd.Add(new());
+        TItem item = new();
+        ItemsToAdd.Add(item);
     }
 
     private object? GetPropertyValue(TItem item, string propertyName)
