@@ -8,7 +8,6 @@
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 
 <NotificationModal @ref="notificationModal" />
-<Dummymodal @ref="dummymodal" />
 
 
 <div class="m-5">
@@ -99,7 +98,6 @@
             "Descriptions",
             o => @<MultiSelectCheckBoxList
                     TItem="TestClass"
-                    CurrentRef="o"
                     Items="states.ToList()"
                     SelectedItems="o.Descriptions"
                     Placeholder="Select States" />
@@ -187,7 +185,6 @@
     }
 
     private ConfirmModal confirmModal = default!;
-    private Dummymodal dummymodal = default!;
     private NotificationModal notificationModal = default!;
     private CooldownTimer cooldownTimer = default!;
     private string Message { get; set; } = "";
@@ -205,6 +202,6 @@
 
     private async Task ShowNotification(string Title, string Message, ModalType modalType)
     {
-        await dummymodal.ShowAsync(Title, Message, modalType);
+        await notificationModal.ShowAsync(Title, Message, modalType);
     }
 }
