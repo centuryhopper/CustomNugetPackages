@@ -1,7 +1,5 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
-@using HandyBlazorComponents.Components
-@using HandyBlazorComponents.Utils
 @using System.Linq
 
 <PageTitle>DEMO</PageTitle>
@@ -10,6 +8,7 @@
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 
 <NotificationModal @ref="notificationModal" />
+<Dummymodal @ref="dummymodal" />
 
 
 <div class="m-5">
@@ -22,22 +21,22 @@
     <label>Notification Modal demo:</label>
     <div class="row">
         <div class="col">
-            <button class="btn btn-primary" @onclick="ShowInfoNotification">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Notice!", "This is an info pop up", ModalType.INFO))">
                 Show Info Popup
             </button>
         </div>
         <div class="col">
-            <button class="btn btn-primary" @onclick="ShowWarningNotification">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Warning!", "This is a warning pop up", ModalType.WARNING))">
                 Show Warning Popup
             </button>
         </div>
         <div class="col">
-            <button class="btn btn-primary" @onclick="ShowSuccessNotification">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Success!", "This is a success pop up", ModalType.SUCCESS))">
                 Show Success Popup
             </button>
         </div>
         <div class="col">
-            <button class="btn btn-primary" @onclick="ShowErrorNotification">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Error!", "This is an error pop up", ModalType.ERROR))">
                 Show Error Popup
             </button>
         </div>
@@ -45,25 +44,9 @@
     <hr>
     <label>Cooldown Timer Demo:</label>
     <button disabled="@(cooldownTimer?.IsCoolingDown ?? false)" class="btn btn-primary" @onclick="IncrementAttempt">
-        @* @if (cooldownTimer?.IsCoolingDown ?? false)
-        {
-            <span class="spinner-border spinner-border-sm mr-1"></span>
-        } *@
         Click Me
     </button>
     <CooldownTimer @ref="cooldownTimer" CooldownTime="10" MaxAttempts="5" OnCooldownComplete="()=>StateHasChanged()" />
-
-    @* <hr> *@
-    @* <div>HandyGrid demo:</div>
-
-    @if (doneLoadingLst)
-    {
-        <HandyGrid @ref="handyGrid" TItem="TestClass" Items="TestLst" OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete"/>
-    }
-    else
-    {
-        <span class="spinner-border spinner-border-sm mr-1"></span>
-    } *@
 
     <hr>
     <div>Number only input demo:</div>
@@ -85,7 +68,6 @@
 
 @code {
 
-    //private IEnumerable<string> SelectedStates { get; set; } = new List<string>();
     private class TestClass
     {
         public int Id {get;set;}
@@ -98,11 +80,12 @@
             return $"{Id}, {Title}, {Description}";
         }
     }
+
     private Dictionary<string, RenderFragment<TestClass>> ColumnItems => new()
     {
         {
             "Id",
-            o => @<input class="form-control" @bind="o.Id" placeholder="Enter Id" />
+            o => @<input type="number" class="form-control" style="width: 10rem;" onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57)/* || event.charCode == 45 uncomment to allow negative values*/)" @bind="o.Id" placeholder="Enter Id">
         },
         {
             "Title",
@@ -110,7 +93,7 @@
         },
         {
             "Description",
-            o => @<input class="form-control" @bind="o.Description" placeholder="Enter Title" />
+            o => @<input class="form-control" @bind="o.Description" placeholder="Enter Description" />
         },
         {
             "Descriptions",
@@ -144,7 +127,6 @@
     private List<TestClass> TestLst {get;set;}
 
     private bool doneLoadingLst = false;
-    private HandyGrid<TestClass> handyGrid = default!;
     private DynamicHandyGrid<TestClass> dynamicHandyGrid = default!;
 
     protected override void OnInitialized()
@@ -172,10 +154,11 @@
         doneLoadingLst = true;
     }
 
-
     private async Task OnCreate(List<TestClass> items)
     {
         TestLst.AddRange(items);
+        // TODO: apply changes here to db in real-world scenario as well
+
     }
 
     private async Task OnDelete(TestClass item)
@@ -184,6 +167,8 @@
         if (true)
         {
             TestLst = TestLst.Where(o=>o.Id != item.Id).ToList();
+            // TODO: apply changes here to db in real-world scenario as well
+
         }
     }
 
@@ -199,11 +184,10 @@
                 // TODO: apply changes here to db in real-world scenario as well
             }
         }
-
-        
     }
 
     private ConfirmModal confirmModal = default!;
+    private Dummymodal dummymodal = default!;
     private NotificationModal notificationModal = default!;
     private CooldownTimer cooldownTimer = default!;
     private string Message { get; set; } = "";
@@ -218,20 +202,9 @@
         var response = await confirmModal.ShowAsync();
         Message = response ? "confirmed" : "canceled";
     }
-    private async Task ShowInfoNotification()
+
+    private async Task ShowNotification(string Title, string Message, ModalType modalType)
     {
-        await notificationModal.ShowInfoAsync("Notice!", "This an info popup");
-    }
-    private async Task ShowWarningNotification()
-    {
-        await notificationModal.ShowWarningAsync("Warning!", "This a Warning popup");
-    }
-    private async Task ShowErrorNotification()
-    {
-        await notificationModal.ShowErrorAsync("Notice!", "This an Error popup");
-    }
-    private async Task ShowSuccessNotification()
-    {
-        await notificationModal.ShowSuccessAsync("Notice!", "This a succcess popup");
+        await dummymodal.ShowAsync(Title, Message, modalType);
     }
 }

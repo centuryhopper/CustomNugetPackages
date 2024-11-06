@@ -1,9 +1,9 @@
 
 
-public enum ModalType
-{
-    ERROR,
-    WARNING,
-    SUCCESS,
-    INFO,
-}
+// public enum ModalType
+// {
+//     ERROR,
+//     WARNING,
+//     SUCCESS,
+//     INFO,
+// }
