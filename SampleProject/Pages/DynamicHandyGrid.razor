@@ -53,6 +53,7 @@
                         <td>
                             @if (AllowEdits[cur] && ColumnItems != null && ColumnItems.TryGetValue(columnName, out var template))
                             {
+                                FragmentRefs[cur] = template;
                                 @template(pagedItems[cur])
                             }
                             else
@@ -62,7 +63,7 @@
                         </td>
                     }
                     <td>
-                        <button disabled="@(!AllowEdits[cur])" @onclick="@(() => UpdateRow(pagedItems[cur]))"
+                        <button disabled="@(!AllowEdits[cur])" @onclick="@(() => UpdateRow(pagedItems[cur], FragmentRefs[cur]))"
                             class="btn btn-primary">Update</button>
                     </td>
                     <td>
@@ -88,6 +89,8 @@
     // Column Templates Dictionary
     [Parameter]
     public Dictionary<string, RenderFragment<TItem>>? ColumnItems { get; set; }
+
+    private RenderFragment<TItem>[] FragmentRefs => new RenderFragment<TItem>[Columns.Count];
 
     [Parameter]
     public List<TItem> Items { get; set; } = new();
@@ -192,7 +195,7 @@
         UpdatePagedItems();
         
 
-        //Console.WriteLine("parameters changed");
+        // Console.WriteLine("parameters changed");
 
     }
     protected override void OnInitialized()
@@ -211,7 +214,7 @@
     {
         //Console.WriteLine(item);
         dynamic value = typeof(TItem).GetProperty(propertyName)?.GetValue(item);
-        if (value is IEnumerable<TItem>)
+        if (value is IEnumerable<string>)
         {
             return string.Join(",", value);
         }
@@ -228,8 +231,12 @@
         }
     }
 
-    private async Task UpdateRow(TItem item)
+    private async Task UpdateRow(TItem item, RenderFragment<TItem> renderFragment)
     {
+        if (renderFragment is Selectables)
+        {
+            (renderFragment as Selectables).ConfirmSelections();
+        }
         await OnUpdate.InvokeAsync(item);
     }
 

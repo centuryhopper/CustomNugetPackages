@@ -1,51 +1,83 @@
+@typeparam TItem
+@implements Selectables
+
 <div class="dropdown">
     <button class="btn btn-secondary dropdown-toggle" type="button" @onclick="ToggleDropdown">
         @Placeholder (@SelectedItems.Count())
     </button>
-    <div class="dropdown-menu @(isDropdownOpen ? "show" : "")" style="max-height: 200px; overflow-y: auto;">
-        @foreach (var item in Items)
-        {
-            <div class="dropdown-item d-flex align-items-center">
-                <input type="checkbox" class="form-check-input me-2"
-                       @onchange="(e) => OnCheckboxChanged(e, item)"
-                       checked="@SelectedItems.Contains(item)" />
-                <label class="form-check-label">@item</label>
-            </div>
-        }
-    </div>
+    @* <button class="btn btn-primary" type="button" @onclick="ConfirmSelections">
+        Confirm Selections
+    </button> *@
+    @if (isDropdownOpen)
+    {
+        <div class="dropdown-menu show" style="max-height: 200px; overflow-y: auto;">
+            @foreach (var item in Items)
+            {
+                <div class="dropdown-item d-flex align-items-center">
+                    <input type="checkbox" class="form-check-input me-2"
+                           @onchange="(e) => OnCheckboxChanged(e, item)"
+                           checked="@SelectedItems.Contains(item)" />
+                    <label class="form-check-label">@item</label>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
-    private bool isDropdownOpen = false;
+    [Parameter]
+    public TItem CurrentRef { get; set; }
 
     [Parameter]
     public List<string> Items { get; set; } = new();
 
     [Parameter]
-    public IEnumerable<string> SelectedItems { get; set; } = new List<string>();
+    public List<string> SelectedItems { get; set; } = new();
 
     [Parameter]
-    public EventCallback<IEnumerable<string>> SelectedItemsChanged { get; set; }
+    public EventCallback<(TItem, IEnumerable<string>)> SelectedItemsChanged { get; set; }
 
     [Parameter]
     public string Placeholder { get; set; } = "Select Items";
+
+    private bool isDropdownOpen = false;
+
+    public void ConfirmSelections()
+    {
+        //await SelectedItemsChanged.InvokeAsync((CurrentRef, SelectedItems));
+        foreach(var sel in SelectedItems)
+        {
+            Console.WriteLine(sel);
+        }
+    }
 
     private async Task OnCheckboxChanged(ChangeEventArgs e, string item)
     {
         var selectedList = SelectedItems.ToList();
 
+        // Toggle the selected item
         if ((bool)e.Value)
         {
             if (!selectedList.Contains(item))
                 selectedList.Add(item);
+
+            SelectedItems.Add(item);
         }
         else
         {
-            if (selectedList.Contains(item))
-                selectedList.Remove(item);
+            selectedList.Remove(item);
+            SelectedItems.Remove(item);
         }
 
-        await SelectedItemsChanged.InvokeAsync(selectedList);
+        foreach(var sel in SelectedItems)
+        {
+            Console.WriteLine(sel);
+        }
+
+        Console.WriteLine(SelectedItems.Count);
+
+        // Invoke the callback with the updated list
+        //await SelectedItemsChanged.InvokeAsync((CurrentRef, SelectedItems));
     }
 
     private void ToggleDropdown()
