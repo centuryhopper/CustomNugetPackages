@@ -1,5 +1,5 @@
 
-namespace HandyBlazorComponents.Utils;
+namespace HandyBlazorComponents.Models;
 
 public enum ModalType
 {

@@ -37,7 +37,7 @@
                                         @* need to set cur to i to avoid index out of bounds error *@
                                         int cur = i;
                                         <tr>
-                                            @foreach (var columnName in Columns)
+                                            @foreach (var (idx, columnName) in Columns.Select((columnName, idx) => (idx, columnName)))
                                             {
                                                 <td>
                                                     @if (EditModeFragments != null && EditModeFragments.TryGetValue(columnName, out var template))
@@ -54,6 +54,7 @@
                                                                 style="width: 10rem" />
                                                         </div>
                                                     }
+                                                    <span class="text-danger">@ErrorMessages[idx]</span>
                                                 </td>
                                             }
                                             <td>
@@ -85,6 +86,11 @@
     [Parameter]
     public string Title { get; set; } = "Items To Add";
 
+    [CascadingParameter(Name = nameof(ValidationChecks))]
+    Func<TItem, GridValidationResponse> ValidationChecks {get;set;}
+
+    private string[] ErrorMessages {get;set;}
+
     [CascadingParameter(Name = nameof(EditModeFragments))]
     public Dictionary<string, RenderFragment<TItem>>? EditModeFragments { get; set; }
     
@@ -100,6 +106,7 @@
         .Except(ReadonlyColumns)
         .ToList();
 
+        ErrorMessages = new string[Columns.Count];
     }
 
     private void AddItem()
@@ -138,15 +145,42 @@
 
     private void ConfirmChanges()
     {
+        // find out rows that have errors
+        foreach (var item in ItemsToAdd)
+        {
+            var validation = ValidationChecks(item);
+            //Console.WriteLine(validation.ColumnIndex);
+            if (!validation.Flag)
+            {
+                // reset
+                for (var i = 0;i < ErrorMessages.Length;i++)
+                {
+                    ErrorMessages[i] = "";
+                }
+
+                // show errors
+                foreach (var kvp in validation.ErrorMessagesDict)
+                {
+                    //Console.WriteLine(kvp.Key);
+                    ErrorMessages[kvp.Key] = string.Join(",", kvp.Value);
+                }
+            }
+            else
+            {
+                for (var i = 0;i < ErrorMessages.Length;i++)
+                {
+                    ErrorMessages[i] = "";
+                }
+            }
+        }
+
+        if (ErrorMessages.Any(msg => !string.IsNullOrWhiteSpace(msg)))
+        {
+            return;
+        }
         isVisible = false;
-        // filter out rows that don't have all rows filled out
-        ItemsToAdd = ItemsToAdd.Where(item => 
-            Columns.All(
-                column => !string.IsNullOrWhiteSpace(
-                    GetPropertyValue(item, column).ToString()
-                )
-            )
-        ).ToList();
+
+        //ItemsToAdd = ItemsToAdd.Where(item => ValidationChecks(item).Flag).ToList();
         taskCompletionSource?.SetResult(ItemsToAdd);
         ItemsToAdd.Clear();
         StateHasChanged();
