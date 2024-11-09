@@ -40,9 +40,19 @@
                                             @foreach (var columnName in Columns)
                                             {
                                                 <td>
-                                                    @if (ColumnItems != null && ColumnItems.TryGetValue(columnName, out var template))
+                                                    @if (EditModeFragments != null && EditModeFragments.TryGetValue(columnName, out var template))
                                                     {
-                                                        @template(ItemsToAdd[cur])
+                                                        <div class="d-flex align-items-center p-3">
+                                                            @template(ItemsToAdd[cur])
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="d-flex align-items-center p-3">
+                                                            <input value="@(GetPropertyValue(ItemsToAdd[cur], columnName))"
+                                                                @oninput="(e) => SetPropertyValue(ItemsToAdd[cur], e.Value, columnName)" class="form-control"
+                                                                style="width: 10rem" />
+                                                        </div>
                                                     }
                                                 </td>
                                             }
@@ -74,14 +84,22 @@
  
     [Parameter]
     public string Title { get; set; } = "Items To Add";
-    [Parameter]
-    public Dictionary<string, RenderFragment<TItem>>? ColumnItems { get; set; }
+
+    [CascadingParameter(Name = nameof(EditModeFragments))]
+    public Dictionary<string, RenderFragment<TItem>>? EditModeFragments { get; set; }
+    
     private List<string>? Columns { get; set; }
+
+    [CascadingParameter(Name = nameof(ReadonlyColumns))]
+    public List<string> ReadonlyColumns {get;set;}
 
     protected override void OnInitialized()
     {
-        Columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
-        var tmp = ColumnItems;
+        Columns = typeof(TItem).GetProperties()
+        .Select(prop => prop.Name)
+        .Except(ReadonlyColumns)
+        .ToList();
+
     }
 
     private void AddItem()
@@ -104,12 +122,12 @@
             property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
         }
     }
- 
+
     private void RemoveItem(TItem TItem)
     {
         ItemsToAdd.Remove(TItem);
     }
- 
+
     public Task<List<TItem>> ShowAsync()
     {
         isVisible = true;
@@ -117,15 +135,15 @@
         StateHasChanged();
         return taskCompletionSource.Task;
     }
- 
+
     private void ConfirmChanges()
     {
         isVisible = false;
-        // filter out rows that haven't been filled out
+        // filter out rows that don't have all rows filled out
         ItemsToAdd = ItemsToAdd.Where(item => 
-            !Columns.All(
-                column => string.IsNullOrWhiteSpace(
-                    GetPropertyValue(item,column).ToString()
+            Columns.All(
+                column => !string.IsNullOrWhiteSpace(
+                    GetPropertyValue(item, column).ToString()
                 )
             )
         ).ToList();
@@ -133,7 +151,7 @@
         ItemsToAdd.Clear();
         StateHasChanged();
     }
- 
+
     private void Cancel()
     {
         isVisible = false;

@@ -63,7 +63,7 @@ Here’s a list of the components included in this library:
       - void OnCreate(List<TItem>), called when user creates one or more rows of data in the grid
     - Parameters:
       - Items: List<TItem> (List of TItems that is derived from some datasource of yours)
-      - ColumnItems: Dictionary<string, RenderFragment<TestClass>> or Dictionary<string, RenderFragment> (each key value pair would have the column name as the key and html code as the value)
+      - EditModeFragments: Dictionary<string, RenderFragment<TestClass>> or Dictionary<string, RenderFragment> (each key value pair would have the column name as the key and html code as the value)
         - example:
           - given the class:
             - private class TestClass
@@ -88,6 +88,10 @@ Here’s a list of the components included in this library:
                     o => @<input class="form-control" @bind="o.Description" placeholder="Enter Description" />
                 },
               };
+      - RenderModeFragments: Dictionary<string, RenderFragment<TestClass>> or Dictionary<string, RenderFragment> (each key value pair would have the column name as the key and html code as the value)
+        - example: see above
+      
+You are responsible for passing in the correct input type when editing, otherwise an error may occur
 
 - **MultiSelectCheckboxList**:
   - This is a dropdown list consisting of a colllection of strings that you can select multiple 
@@ -106,7 +110,14 @@ More will be added as per request, so feel free to create an issue.
 Contributions are welcome as well! Just create a pull request and I will take a look.
 
 ## Installation
-
 Install via NuGet Package Manager:
-
 - dotnet add package HandyBlazorComponents
+
+Configuration:
+- Append these lines to your _Imports.razor:
+  ``@using HandyBlazorComponents.Components
+    @using HandyBlazorComponents.Utils
+    @using ModalType = HandyBlazorComponents.Utils.ModalType``
+
+- Add this to your index.html:
+    ``<script src="_content/HandyBlazorComponents/handyBlazorComponents.js"></script>``
