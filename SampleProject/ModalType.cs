@@ -1,6 +1,6 @@
 
 
-// public enum ModalType
+// public enum HandyModalType
 // {
 //     ERROR,
 //     WARNING,

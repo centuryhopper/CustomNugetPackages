@@ -35,30 +35,30 @@
                                     @for (int i = 0; i < ItemsToAdd.Count; i++)
                                     {
                                         @* need to set cur to i to avoid index out of bounds error *@
-                                        int cur = i;
+                                        int rowIdx = i;
                                         <tr>
-                                            @foreach (var (idx, columnName) in Columns.Select((columnName, idx) => (idx, columnName)))
+                                            @foreach (var (columnIdx, columnName) in Columns.Select((columnName, columnIdx) => (columnIdx, columnName)))
                                             {
                                                 <td>
                                                     @if (EditModeFragments != null && EditModeFragments.TryGetValue(columnName, out var template))
                                                     {
                                                         <div class="d-flex align-items-center p-3">
-                                                            @template(ItemsToAdd[cur])
+                                                            @template(ItemsToAdd[rowIdx])
                                                         </div>
                                                     }
                                                     else
                                                     {
                                                         <div class="d-flex align-items-center p-3">
-                                                            <input value="@(GetPropertyValue(ItemsToAdd[cur], columnName))"
-                                                                @oninput="(e) => SetPropertyValue(ItemsToAdd[cur], e.Value, columnName)" class="form-control"
+                                                            <input value="@(GetPropertyValue(ItemsToAdd[rowIdx], columnName))"
+                                                                @oninput="(e) => SetPropertyValue(ItemsToAdd[rowIdx], e.Value, columnName)" class="form-control"
                                                                 style="width: 10rem" />
                                                         </div>
                                                     }
-                                                    <span class="text-danger">@ErrorMessages[idx]</span>
+                                                    <span class="text-danger">@ErrorMessages[rowIdx,columnIdx]</span>
                                                 </td>
                                             }
                                             <td>
-                                                <button type="button" class="btn btn-danger" @onclick="(() => RemoveItem(ItemsToAdd[cur]))">Remove</button>
+                                                <button type="button" class="btn btn-danger" @onclick="(() => RemoveItem(ItemsToAdd[rowIdx]))">Remove</button>
                                             </td>
                                         </tr>
                                     }
@@ -87,9 +87,22 @@
     public string Title { get; set; } = "Items To Add";
 
     [CascadingParameter(Name = nameof(ValidationChecks))]
-    Func<TItem, GridValidationResponse> ValidationChecks {get;set;}
+    Func<TItem, List<string>, GridValidationResponse> ValidationChecks {get;set;}
 
-    private string[] ErrorMessages {get;set;}
+    private string[,] _errorMessages;
+
+    private string[,] ErrorMessages
+    {
+        get
+        {
+            if (_errorMessages == null || _errorMessages.GetLength(0) != ItemsToAdd.Count || _errorMessages.GetLength(1) != (Columns?.Count ?? 0))
+            {
+                _errorMessages = new string[ItemsToAdd.Count, Columns?.Count ?? 0];
+            }
+            return _errorMessages;
+        }
+        set => _errorMessages = value;
+    }
 
     [CascadingParameter(Name = nameof(EditModeFragments))]
     public Dictionary<string, RenderFragment<TItem>>? EditModeFragments { get; set; }
@@ -101,12 +114,11 @@
 
     protected override void OnInitialized()
     {
+        // remove readonly columns from your columns
         Columns = typeof(TItem).GetProperties()
         .Select(prop => prop.Name)
         .Except(ReadonlyColumns)
         .ToList();
-
-        ErrorMessages = new string[Columns.Count];
     }
 
     private void AddItem()
@@ -146,38 +158,42 @@
     private void ConfirmChanges()
     {
         // find out rows that have errors
-        foreach (var item in ItemsToAdd)
+        foreach (var (rowIdx, item) in ItemsToAdd.Select((item, rowIdx) => (rowIdx, item)))
         {
-            var validation = ValidationChecks(item);
+            var validation = ValidationChecks(item, Columns.ToList());
             //Console.WriteLine(validation.ColumnIndex);
             if (!validation.Flag)
             {
                 // reset
-                for (var i = 0;i < ErrorMessages.Length;i++)
+                // getlength(1) returns number of columns
+                // getlength(0) returns number of rows
+                for (var columnIdx = 0;columnIdx < ErrorMessages.GetLength(1);columnIdx++)
                 {
-                    ErrorMessages[i] = "";
+                    ErrorMessages[rowIdx, columnIdx] = "";
                 }
 
                 // show errors
                 foreach (var kvp in validation.ErrorMessagesDict)
                 {
                     //Console.WriteLine(kvp.Key);
-                    ErrorMessages[kvp.Key] = string.Join(",", kvp.Value);
+                    ErrorMessages[rowIdx, kvp.Key] = string.Join(",", kvp.Value);
                 }
             }
             else
             {
-                for (var i = 0;i < ErrorMessages.Length;i++)
+                for (var columnIdx = 0;columnIdx < ErrorMessages.GetLength(1);columnIdx++)
                 {
-                    ErrorMessages[i] = "";
+                    ErrorMessages[rowIdx, columnIdx] = "";
                 }
             }
         }
 
-        if (ErrorMessages.Any(msg => !string.IsNullOrWhiteSpace(msg)))
+        // checks if any of the cells still has errors
+        if (ErrorMessages.Cast<string>().Any(errMsg => !string.IsNullOrWhiteSpace(errMsg)))
         {
             return;
         }
+
         isVisible = false;
 
         //ItemsToAdd = ItemsToAdd.Where(item => ValidationChecks(item).Flag).ToList();

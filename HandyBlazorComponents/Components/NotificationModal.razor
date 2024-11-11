@@ -25,7 +25,7 @@
     private string Title { get; set; } = "Notification";
     private string BodyText { get; set; } = "Message";
  
-    public Task ShowAsync(string title, string message, ModalType modalType)
+    public Task ShowAsync(string title, string message, HandyModalType modalType)
     {
         Title = title;
         BodyText = message;
@@ -43,14 +43,14 @@
         StateHasChanged();
     }
  
-    private void SetModalClass(ModalType modalType)
+    private void SetModalClass(HandyModalType modalType)
     {
         modalClass = modalType switch
         {
-            ModalType.SUCCESS => "text-success",
-            ModalType.WARNING => "text-warning",
-            ModalType.ERROR => "text-danger",
-            ModalType.INFO => "text-info",
+            HandyModalType.SUCCESS => "text-success",
+            HandyModalType.WARNING => "text-warning",
+            HandyModalType.ERROR => "text-danger",
+            HandyModalType.INFO => "text-info",
             _ => ""
         };
     }

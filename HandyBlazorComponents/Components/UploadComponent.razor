@@ -43,11 +43,11 @@
 
         if (selectedFile == null || selectedFile.Size == 0)
         {
-            await notificationModal.ShowAsync("Error", "No file selected or file is empty.", ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", "No file selected or file is empty.", HandyModalType.ERROR);
         }
         else
         {
-            await notificationModal.ShowAsync("Success", $"File selected: {selectedFile.Name}", ModalType.SUCCESS);
+            await notificationModal.ShowAsync("Success", $"File selected: {selectedFile.Name}", HandyModalType.SUCCESS);
         }
     }
 
@@ -55,7 +55,7 @@
     {
         if (selectedFile == null || selectedFile.Size == 0)
         {
-            await notificationModal.ShowAsync("Error", "No file selected or file is empty.", ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", "No file selected or file is empty.", HandyModalType.ERROR);
             return;
         }
 
@@ -71,7 +71,7 @@
         }
         catch (Exception ex)
         {
-            await notificationModal.ShowAsync("Error", ex.Message, ModalType.ERROR);
+            await notificationModal.ShowAsync("Error", ex.Message, HandyModalType.ERROR);
         }
         finally {
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);

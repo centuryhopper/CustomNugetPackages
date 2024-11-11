@@ -1,0 +1,106 @@
+<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;">
+    @if (IsVisible)
+    {
+        <div class="toast-container @ToastTypeClass" role="alert" style="display: block;">
+            <div class="toast-header">
+                <strong>@Title</strong>
+                @* <button type="button" class="btn-close" aria-label="Close" @onclick="HideToast">✕</button> *@
+            </div>
+            <div class="toast-body">
+                @Message
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    /* Inline CSS for the Toast component */
+    .toast-container {
+        min-width: 250px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast-header {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+    }
+
+    .toast-body {
+        margin-top: 0.5rem;
+    }
+
+    .toast-info {
+        background-color: #17a2b8;
+    }
+
+    .toast-success {
+        background-color: #28a745;
+    }
+
+    .toast-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .toast-error {
+        background-color: #dc3545;
+    }
+
+    .btn-close {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+
+
+
+    [Parameter] public string Title { get; set; } = "Notification";
+    [Parameter] public string Message { get; set; } = "This is a toast message.";
+    [Parameter] public HandyToastType ToastType { get; set; } = HandyToastType.Info; // Use the enum here
+
+    /// <summary>
+    /// Duration in seconds
+    /// </summary>
+    /// <value></value>
+    [Parameter] public int Duration { get; set; } = 5;
+
+    private bool IsVisible { get; set; } = false;
+    private string ToastTypeClass => ToastType switch
+    {
+        HandyToastType.Success => "toast-success",
+        HandyToastType.Warning => "toast-warning",
+        HandyToastType.Error => "toast-error",
+        _ => "toast-info",
+    };
+
+    public async Task ShowToastAsync(string title, string message, HandyToastType toastType)
+    {
+        Title = title;
+        Message = message;
+        ToastType = toastType;
+        IsVisible = true;
+        StateHasChanged();
+
+        await Task.Delay(Duration * 1000);
+
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    private void HideToast()
+    {
+        //Console.WriteLine("hiding...");
+        IsVisible = false;
+        StateHasChanged();
+    }
+}

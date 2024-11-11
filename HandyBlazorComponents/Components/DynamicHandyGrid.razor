@@ -2,7 +2,6 @@
 @using System.Linq.Expressions
 
 
-
 @* This grid has pagination and filtering and sorting along with all CRUD operations *@
 
 <div class="text-center overflow-auto m-3">
@@ -30,42 +29,42 @@
             </tr>
         </thead>
         <tbody>
-            @for (int i = 0; i < pagedItems.Count; i++)
+            @for (int i = 0; i < pagedItemsHelper.Count; i++)
             {
-                int cur = i;
+                int rowIdx = i;
                 <tr>
                     <td>
                         <div style="width: 2.5rem;">
-                            @cur
+                            @rowIdx
                         </div>
                     </td>
                     <td>
-                        @if (AllowEdits[cur])
+                        @if (AllowEdits[rowIdx])
                         {
-                            <button @onclick="@(() => CancelEdit(cur, pagedItems[cur]))" class="btn btn-primary">Cancel</button>
+                            <button @onclick="@(() => CancelEdit(rowIdx, pagedItemsHelper[rowIdx]))" class="btn btn-primary">Cancel</button>
                         }
                         else
                         {
-                            <button @onclick="@(() => BeginEdit(cur))" class="btn btn-primary">Edit</button>
+                            <button @onclick="@(() => BeginEdit(rowIdx))" class="btn btn-primary">Edit</button>
                         }
                     </td>
-                    @foreach (var columnName in Columns)
+                    @foreach (var (columnIdx, columnName) in Columns.Select((columnName, columnIdx) => (columnIdx, columnName)))
                     {
                         <td>
                             @* edit mode cases *@
-                            @if (!ReadonlyColumns.Contains(columnName) && AllowEdits[cur])
+                            @if (!ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
                             {
                                 @if (EditModeFragments != null && EditModeFragments.TryGetValue(columnName, out var template))
                                 {
                                     <div class="d-flex align-items-center p-3">
-                                        @template(pagedItems[cur])
+                                        @template(pagedItemsHelper[rowIdx])
                                     </div>
                                 }
                                 else
                                 {
                                     <div class="d-flex align-items-center p-3">
-                                        <input value="@(GetPropertyValue(pagedItems[cur], columnName))"
-                                            @oninput="(e) => SetPropertyValue(pagedItems[cur], e.Value, columnName)"
+                                        <input value="@(GetPropertyValue(pagedItemsHelper[rowIdx], columnName))"
+                                            @oninput="(e) => SetPropertyValue(pagedItemsHelper[rowIdx], e.Value, columnName)"
                                             class="form-control" style="width: 10rem" />
                                     </div>
                                 }
@@ -75,30 +74,38 @@
                             {
                                 @if (ViewModeFragments != null && ViewModeFragments.TryGetValue(columnName, out var template))
                                 {
-                                    @template(pagedItems[cur])
+                                    @template(pagedItemsHelper[rowIdx])
                                 }
                                 else
                                 {
-                                    <span>@GetPropertyValue(pagedItems[cur], columnName)</span>
+                                    <span>@GetPropertyValue(pagedItemsHelper[rowIdx], columnName)</span>
                                 }
                             }
+
+                            <span class="text-danger">@ErrorMessages[rowIdx,columnIdx]</span>
                         </td>
                     }
                     <td>
-                        <button disabled="@(!AllowEdits[cur])" @onclick="@(() => UpdateRow(pagedItems[cur]))"
+                        <button disabled="@(!AllowEdits[rowIdx])" @onclick="@(() => UpdateRow(rowIdx, pagedItemsHelper[rowIdx]))"
                             class="btn btn-primary">Update</button>
                     </td>
                     <td>
-                        <button @onclick="@(() => DeleteRow(pagedItems[cur]))" class="btn btn-danger">DELETE</button>
+                        <button @onclick="@(() => DeleteRow(pagedItemsHelper[rowIdx]))" class="btn btn-danger">DELETE</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
-<ConfirmModal @ref="confirmModal" Title="Warning"
+
+<ConfirmModal 
+    @ref="confirmModal"
+    Title="Warning"
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
-<CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="OnPageChanged" />
+<CustomPagination 
+    CurrentPage="CurrentPage"
+    TotalPages="TotalPages"
+    OnPageChanged="OnPageChanged" />
 
 <AddDynamicItemsModal TItem="TItem" @ref="AddDynamicItemsModal" />
 
@@ -118,7 +125,7 @@
     AddDynamicItemsModal<TItem> AddDynamicItemsModal = default!;
 
     [CascadingParameter(Name = nameof(ValidationChecks))]
-    Func<TItem, GridValidationResponse> ValidationChecks { get; set; }
+    Func<TItem, List<string>, GridValidationResponse> ValidationChecks { get; set; }
 
     [CascadingParameter(Name = nameof(EditModeFragments))]
     public Dictionary<string, RenderFragment<TItem>>? EditModeFragments { get; set; }
@@ -151,12 +158,32 @@
     private List<string>? Columns { get; set; }
     private IEnumerable<TItem> filteredItems =>
     Items.Where(item => FilterQuery(item));
+
     private List<TItem> pagedItems = new();
+    /// <summary>
+    /// A temp list in the dynamic handy grid so that the cancel function can be used to revert back the old values in the original grid.
+    /// Used in case we want to revert a change.
+    /// </summary>
+    /// <returns></returns>
+    private List<TItem> pagedItemsHelper = new();
     private string sortColumn;
     private bool sortAscending = true;
-
-
     private List<TItem> ItemsToAdd = new();
+
+    private string[,] _errorMessages;
+
+    private string[,] ErrorMessages
+    {
+        get
+        {
+            if (_errorMessages == null || _errorMessages.GetLength(0) != pagedItemsHelper.Count || _errorMessages.GetLength(1) != (Columns?.Count ?? 0))
+            {
+                _errorMessages = new string[pagedItemsHelper.Count, Columns?.Count ?? 0];
+            }
+            return _errorMessages;
+        }
+        set => _errorMessages = value;
+    }
 
     private async Task AddNewItems()
     {
@@ -192,6 +219,27 @@
         UpdatePagedItems();
     }
 
+    private List<TItem> DeepCopy(List<TItem> originalLst)
+    {
+        List<TItem> deepCopy = new List<TItem>();
+        foreach (var originalItem in originalLst)
+        {
+            var copy = new TItem();
+            foreach(var columnName in Columns)
+            {
+                if (columnName == "CreatedAt")
+                {
+                    ;
+                }
+                var originalValue = GetPropertyValue(originalItem, columnName);
+                SetPropertyValue(copy, originalValue, columnName);
+            }
+            // Manually copy properties from item to copy if necessary
+            deepCopy.Add(copy);
+        }
+        return deepCopy;
+    }
+
     private void UpdatePagedItems()
     {
         var itemsQuery = filteredItems.AsQueryable();
@@ -209,6 +257,7 @@
         }
 
         pagedItems = itemsQuery.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
+        pagedItemsHelper = DeepCopy(pagedItems);
         AllowEdits = Enumerable.Repeat(false, pagedItems.Count).ToList();
         // Console.WriteLine(AllowEdits.Count);
 
@@ -254,7 +303,7 @@
             return string.Join(",", value);
         }
 
-        return value?.ToString();
+        return value;
     }
 
     private void SetPropertyValue(TItem item, object? value, string propertyName)
@@ -262,21 +311,68 @@
         var property = typeof(TItem).GetProperty(propertyName);
         if (property != null && property.CanWrite && value != null)
         {
-            property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
+            // Special handling for DateTime types
+            if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
+            {
+                if (value is string stringValue && DateTime.TryParse(stringValue, out DateTime parsedDate))
+                {
+                    property.SetValue(item, parsedDate);
+                }
+                else if (value is DateTime dateTimeValue)
+                {
+                    property.SetValue(item, dateTimeValue);
+                }
+                else if (property.PropertyType == typeof(DateTime?))
+                {
+                    // Set nullable DateTime to null if value is not a valid date
+                    property.SetValue(item, null);
+                }
+            }
+            else
+            {
+                // Use Convert.ChangeType for other types
+                property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
+            }
         }
     }
 
-    private async Task UpdateRow(TItem item)
+    private async Task UpdateRow(int rowIdx, TItem item)
     {
-        var validation = ValidationChecks(item);
-        if (validation.Flag)
+        // find out rows that have errors
+        var validation = ValidationChecks(item, Columns);
+        if (!validation.Flag)
         {
-            await OnUpdate.InvokeAsync(item);
+            // reset
+            // getlength(1) returns number of columns
+            // getlength(0) returns number of rows
+            for (var columnIdx = 0;columnIdx < ErrorMessages.GetLength(1);columnIdx++)
+            {
+                ErrorMessages[rowIdx, columnIdx] = "";
+            }
+
+            // show errors
+            foreach (var kvp in validation.ErrorMessagesDict)
+            {
+                //Console.WriteLine(kvp.Key);
+                ErrorMessages[rowIdx, kvp.Key] = string.Join(",", kvp.Value);
+            }
         }
         else
         {
-            
+            for (var columnIdx = 0;columnIdx < ErrorMessages.GetLength(1);columnIdx++)
+            {
+                ErrorMessages[rowIdx, columnIdx] = "";
+            }
         }
+
+
+        // checks if any of the cells still has errors
+        if (ErrorMessages.Cast<string>().Any(errMsg => !string.IsNullOrWhiteSpace(errMsg)))
+        {
+            return;
+        }
+
+        await OnUpdate.InvokeAsync(item);
     }
 
     private async Task DeleteRow(TItem item)
@@ -284,22 +380,25 @@
         await OnDelete.InvokeAsync(item);
     }
 
-    private async Task CancelEdit(int cur, TItem item)
+    private async Task CancelEdit(int rowIdx, TItem item)
     {
-        var validation = ValidationChecks(item);
-        if (validation.Flag)
+        // clear error messages
+        for (var columnIdx = 0;columnIdx < ErrorMessages.GetLength(1);columnIdx++)
         {
-            AllowEdits[cur] = false;
+            ErrorMessages[rowIdx, columnIdx] = "";
         }
-        else
+        
+        foreach(var columnName in Columns)
         {
-            
+            SetPropertyValue(pagedItemsHelper[rowIdx], GetPropertyValue(pagedItems[rowIdx], columnName), columnName);
         }
+
+        AllowEdits[rowIdx] = false;
     }
 
-    private async Task BeginEdit(int cur)
+    private async Task BeginEdit(int rowIdx)
     {
-        AllowEdits[cur] = true;
+        AllowEdits[rowIdx] = true;
     }
 
     private string GetFilterValue(string column)
