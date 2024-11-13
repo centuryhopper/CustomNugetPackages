@@ -497,13 +497,17 @@
     private async Task DeleteRow(TItem item)
     {
         //Console.WriteLine(item.GetPrimaryKey());
-        var itemToRemove = Items.FirstOrDefault(o=>o.GetPrimaryKey() == item.GetPrimaryKey());
-        if (itemToRemove != null)
+        var response = await confirmModal.ShowAsync();
+        if (response)
         {
-            Items.Remove(itemToRemove);
+            var itemToRemove = Items.FirstOrDefault(o=>o.GetPrimaryKey() == item.GetPrimaryKey());
+            if (itemToRemove != null)
+            {
+                Items.Remove(itemToRemove);
+            }
+            //Console.WriteLine(Items.Count);
+            await OnDelete.InvokeAsync(item);
         }
-        Console.WriteLine(Items.Count);
-        await OnDelete.InvokeAsync(item);
     }
 
     private async Task CancelEdit(int rowIdx, TItem item)

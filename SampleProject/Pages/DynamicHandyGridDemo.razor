@@ -7,17 +7,17 @@
     @if (doneLoadingLst)
     {
         <CascadingValue Name="ValidationChecks" Value="ValidationChecks" IsFixed="true">
-    <CascadingValue Name="EditModeFragments" Value="EditModeFragments" IsFixed="true">
-        <CascadingValue Name="ReadonlyColumns" Value="ReadonlyColumns" IsFixed="true">
-            <CascadingValue Name="SubmitFileAction" Value="SubmitFileAction" IsFixed="true">
-                <CascadingValue Name="ExampleFileUploadUrl" Value="@("templates/example.csv")" IsFixed="true">
-                    <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" Items="TestLst"
-                        OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" />
+            <CascadingValue Name="EditModeFragments" Value="EditModeFragments" IsFixed="true">
+                <CascadingValue Name="ReadonlyColumns" Value="ReadonlyColumns" IsFixed="true">
+                    <CascadingValue Name="SubmitFileAction" Value="SubmitFileAction" IsFixed="true">
+                        <CascadingValue Name="ExampleFileUploadUrl" Value="@("templates/example.csv")" IsFixed="true">
+                            <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" Items="TestLst"
+                                OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" />
+                        </CascadingValue>
+                    </CascadingValue>
                 </CascadingValue>
             </CascadingValue>
         </CascadingValue>
-    </CascadingValue>
-</CascadingValue>
     }
     else
     {
@@ -28,7 +28,6 @@
 
 @code {
     
-
     private Dictionary<string, RenderFragment<TestClass>> EditModeFragments => new()
     {
         {
@@ -77,13 +76,6 @@
     private DynamicHandyGrid<TestClass> dynamicHandyGrid = default!;
     private ConfirmModal confirmModal = default!;
 
-    private async Task OnSubmitFile(IEnumerable<TestClass> results)
-    {
-        // Console.WriteLine("you would make http call here");
-        // Console.WriteLine(string.Join("$$$", results));
-        TestLst.AddRange(results);
-    }
-
     protected override void OnInitialized()
     {
         TestLst = [
@@ -109,6 +101,22 @@
         doneLoadingLst = true;
     }
 
+
+    private async Task OnSubmitFile(IEnumerable<TestClass> results)
+    {
+        // Console.WriteLine("you would make http call here");
+        // Console.WriteLine(string.Join("$$$", results));
+        // process data here
+        var lst = results.ToList();
+        for (int i = 0;i < results.Count();i++)
+        {
+            var choices = lst[i].Descriptions[0].Split("+");
+            lst[i].Descriptions.Clear();
+            lst[i].Descriptions.AddRange(choices);
+        }
+        TestLst.AddRange(results);
+    }
+
     private async Task OnCreate(List<TestClass> items)
     {
         //TestLst.AddRange(items);
@@ -119,30 +127,25 @@
 
     private async Task OnDelete(TestClass item)
     {
-        // var response = await confirmModal.ShowAsync();
-        if (true)
-        {
-            Console.WriteLine("deleting item");
-            // TODO: apply changes here to db in real-world scenario as well
-            //TestLst = TestLst.Where(o=>o.GetPrimaryKey() != item.GetPrimaryKey()).ToList();
-
-
-        }
+        Console.WriteLine("deleting item");
+        //TestLst = TestLst.Where(o=>o.GetPrimaryKey() != item.GetPrimaryKey()).ToList();
+        // TODO: apply changes here to db in real-world scenario as well
     }
 
     private async Task OnUpdate(TestClass item)
     {
-        for (int i = 0; i < TestLst.Count; i++)
-        {
-            if (TestLst[i].Id == item.Id)
-            {
-                TestLst[i].Title = item.Title;
-                TestLst[i].Description = item.Description;
-                TestLst[i].Descriptions = item.Descriptions;
-
-                // TODO: apply changes here to db in real-world scenario as well
-            }
-        }
+        Console.WriteLine("updating items");
+        //for (int i = 0; i < TestLst.Count; i++)
+        //{
+        //    if (TestLst[i].Id == item.Id)
+        //    {
+        //        TestLst[i].Title = item.Title;
+        //        TestLst[i].Description = item.Description;
+        //        TestLst[i].Descriptions = item.Descriptions;
+//
+        //    }
+        //}
+        // TODO: apply changes here to db in real-world scenario as well
     }
 
     private HandyToast handyToast = default!;
