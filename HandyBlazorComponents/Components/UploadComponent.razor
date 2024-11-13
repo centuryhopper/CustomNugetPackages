@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 
-@typeparam TItem where TItem : class, new()
+@typeparam TItem where TItem : class, IHandyGridEntity, new()
 @typeparam TMapper where TMapper : ClassMap
 
 <div class="m-3 p-3" style="overflow-y: scroll; height: 30rem;">
@@ -41,16 +41,14 @@
     [CascadingParameter(Name = nameof(ExampleFileUploadUrl))]
     public string ExampleFileUploadUrl { get; set; }
 
+    [CascadingParameter(Name = nameof(Items))]
+    public List<TItem> Items { get; set; } = new();
+
 
     private static object? GetPropertyValue(TItem item, string propertyName)
     {
         //Console.WriteLine(item);
         dynamic value = typeof(TItem).GetProperty(propertyName)?.GetValue(item);
-        if (value is IEnumerable<string>)
-        {
-            return string.Join(",", value);
-        }
-
         return value;
     }
 
@@ -103,6 +101,20 @@
             {
                 results.Add(record);
             }
+
+            for (int i = 0;i < results.Count;i++)
+            {
+                var props = new Dictionary<string,object>();
+                
+                foreach (var columnName in columns)
+                {
+                    props.Add(columnName, GetPropertyValue(results[i], columnName));
+                }
+
+                results[i].ParsePropertiesFromCSV(props);
+            }
+
+            Items.AddRange(results);
 
             // Invoke the file submission action with the list of parsed items
             await SubmitFileAction.InvokeAsync(results);

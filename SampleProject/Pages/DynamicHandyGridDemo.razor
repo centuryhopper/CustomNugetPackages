@@ -6,13 +6,16 @@
 
     @if (doneLoadingLst)
     {
-        <CascadingValue Name="ValidationChecks" Value="ValidationChecks" IsFixed="true">
-            <CascadingValue Name="EditModeFragments" Value="EditModeFragments" IsFixed="true">
-                <CascadingValue Name="ReadonlyColumns" Value="ReadonlyColumns" IsFixed="true">
-                    <CascadingValue Name="SubmitFileAction" Value="SubmitFileAction" IsFixed="true">
-                        <CascadingValue Name="ExampleFileUploadUrl" Value="@("templates/example.csv")" IsFixed="true">
-                            <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" Items="TestLst"
-                                OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" />
+        <CascadingValue Name="Items" Value="TestLst" IsFixed="true">
+            <CascadingValue Name="ValidationChecks" Value="ValidationChecks" IsFixed="true">
+                <CascadingValue Name="EditModeFragments" Value="EditModeFragments" IsFixed="true">
+                    <CascadingValue Name="ReadonlyColumns" Value="ReadonlyColumns" IsFixed="true">
+                        <CascadingValue Name="SubmitFileAction" Value="SubmitFileAction" IsFixed="true">
+                            <CascadingValue Name="ExampleFileUploadUrl" Value="@("templates/example.csv")" IsFixed="true">
+                                <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass"
+                                TMapper="TestClassMapper"
+                                    OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" />
+                            </CascadingValue>
                         </CascadingValue>
                     </CascadingValue>
                 </CascadingValue>
@@ -73,7 +76,7 @@
     private List<TestClass> TestLst {get;set;}
 
     private bool doneLoadingLst = false;
-    private DynamicHandyGrid<TestClass> dynamicHandyGrid = default!;
+    private DynamicHandyGrid<TestClass, TestClassMapper> dynamicHandyGrid = default!;
     private ConfirmModal confirmModal = default!;
 
     protected override void OnInitialized()
@@ -105,21 +108,12 @@
     private async Task OnSubmitFile(IEnumerable<TestClass> results)
     {
         // Console.WriteLine("you would make http call here");
-        // Console.WriteLine(string.Join("$$$", results));
-        // process data here
-        var lst = results.ToList();
-        for (int i = 0;i < results.Count();i++)
-        {
-            var choices = lst[i].Descriptions[0].Split("+");
-            lst[i].Descriptions.Clear();
-            lst[i].Descriptions.AddRange(choices);
-        }
-        TestLst.AddRange(results);
+
+        Console.WriteLine("on submit file!");
     }
 
     private async Task OnCreate(List<TestClass> items)
     {
-        //TestLst.AddRange(items);
         Console.WriteLine("added items");
         // TODO: apply changes here to db in real-world scenario as well
 
@@ -128,23 +122,12 @@
     private async Task OnDelete(TestClass item)
     {
         Console.WriteLine("deleting item");
-        //TestLst = TestLst.Where(o=>o.GetPrimaryKey() != item.GetPrimaryKey()).ToList();
         // TODO: apply changes here to db in real-world scenario as well
     }
 
     private async Task OnUpdate(TestClass item)
     {
         Console.WriteLine("updating items");
-        //for (int i = 0; i < TestLst.Count; i++)
-        //{
-        //    if (TestLst[i].Id == item.Id)
-        //    {
-        //        TestLst[i].Title = item.Title;
-        //        TestLst[i].Description = item.Description;
-        //        TestLst[i].Descriptions = item.Descriptions;
-//
-        //    }
-        //}
         // TODO: apply changes here to db in real-world scenario as well
     }
 
