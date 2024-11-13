@@ -66,7 +66,7 @@
 
     [Parameter] public string Title { get; set; } = "Notification";
     [Parameter] public string Message { get; set; } = "This is a toast message.";
-    [Parameter] public HandyToastType ToastType { get; set; } = HandyToastType.Info; // Use the enum here
+    [Parameter] public HandyToastType ToastType { get; set; } = HandyToastType.INFO; // Use the enum here
 
     /// <summary>
     /// Duration in seconds
@@ -77,9 +77,9 @@
     private bool IsVisible { get; set; } = false;
     private string ToastTypeClass => ToastType switch
     {
-        HandyToastType.Success => "toast-success",
-        HandyToastType.Warning => "toast-warning",
-        HandyToastType.Error => "toast-error",
+        HandyToastType.SUCCESS => "toast-success",
+        HandyToastType.WARNING => "toast-warning",
+        HandyToastType.ERROR => "toast-error",
         _ => "toast-info",
     };
 

@@ -9,4 +9,12 @@
 @using SampleProject
 @using SampleProject.Layout
 @using HandyBlazorComponents.Components
-@using HandyBlazorComponents.Utils
+@using HandyBlazorComponents.Models
+@using ModalType = HandyBlazorComponents.Models.HandyModalType
+@using static HandyBlazorComponents.Models.ServiceResponses
+@using CsvHelper
+@using CsvHelper.Configuration
+@using System.Globalization
+
+@inject IJSRuntime jsRuntime
+@inject NavigationManager NavigationManager

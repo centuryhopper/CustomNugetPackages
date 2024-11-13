@@ -1,0 +1,234 @@
+@page "/dynamichandygrid-demo"
+
+
+<div class="m-5">
+    <div>Dynamic HandyGrid demo:</div>
+
+    @if (doneLoadingLst)
+    {
+        <CascadingValue Name="ValidationChecks" Value="ValidationChecks" IsFixed="true">
+    <CascadingValue Name="EditModeFragments" Value="EditModeFragments" IsFixed="true">
+        <CascadingValue Name="ReadonlyColumns" Value="ReadonlyColumns" IsFixed="true">
+            <CascadingValue Name="SubmitFileAction" Value="SubmitFileAction" IsFixed="true">
+                <CascadingValue Name="ExampleFileUploadUrl" Value="@("templates/example.csv")" IsFixed="true">
+                    <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" Items="TestLst"
+                        OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" />
+                </CascadingValue>
+            </CascadingValue>
+        </CascadingValue>
+    </CascadingValue>
+</CascadingValue>
+    }
+    else
+    {
+        <span class="spinner-border spinner-border-sm mr-1"></span>
+    }
+</div>
+
+
+@code {
+    
+
+    private Dictionary<string, RenderFragment<TestClass>> EditModeFragments => new()
+    {
+        {
+            "Id",
+            o => @<input type="number" class="form-control" style="width: 10rem;" onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57)/* || event.charCode == 45 uncomment to allow negative values*/)" @bind="o.Id" placeholder="Enter Id">
+        },
+        //{
+        //    "Title",
+        //    o => @<input class="form-control" @bind="o.Title" placeholder="Enter Title" />
+        //},
+        //{
+        //    "Description",
+        //    o => @<input class="form-control" @bind="o.Description" placeholder="Enter Description" />
+        //},
+        {
+            "Descriptions",
+            o => @<MultiSelectCheckBoxList
+                    TItem="TestClass"
+                    Items="states.ToList()"
+                    SelectedItems="o.Descriptions"
+                    Placeholder="Select States" />
+        }
+    };
+
+    private string[] states =
+    {
+        "Alabama", "Alaska", "American Samoa", "Arizona",
+        "Arkansas", "California", "Colorado", "Connecticut",
+        "Delaware", "District of Columbia", "Federated States of Micronesia",
+        "Florida", "Georgia", "Guam", "Hawaii", "Idaho",
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Marshall Islands", "Maryland",
+        "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+        "Missouri", "Montana", "Nebraska", "Nevada",
+        "New Hampshire", "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Northern Mariana Islands", "Ohio",
+        "Oklahoma", "Oregon", "Palau", "Pennsylvania", "Puerto Rico",
+        "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
+        "Texas", "Utah", "Vermont", "Virgin Island", "Virginia",
+        "Washington", "West Virginia", "Wisconsin", "Wyoming",
+    };
+    
+    private List<TestClass> TestLst {get;set;}
+
+    private bool doneLoadingLst = false;
+    private DynamicHandyGrid<TestClass> dynamicHandyGrid = default!;
+    private ConfirmModal confirmModal = default!;
+
+    private async Task OnSubmitFile(IEnumerable<TestClass> results)
+    {
+        // Console.WriteLine("you would make http call here");
+        // Console.WriteLine(string.Join("$$$", results));
+        TestLst.AddRange(results);
+    }
+
+    protected override void OnInitialized()
+    {
+        TestLst = [
+            new TestClass { Id=1, Title = "Title01", Description = "Description01", Descriptions = ["Texas","Utah","Vermont"],},
+            new TestClass { Id=2, Title = "Title02", Description = "Description02", Descriptions = [],},
+            
+            new TestClass { Id=3, Title = "Title03", Description = "Description03", Descriptions = [],},
+            new TestClass { Id=4, Title = "Title04", Description = "Description04", Descriptions = [],},
+
+            new TestClass { Id=5, Title = "Title05", Description = "Description05", Descriptions = [],},
+            new TestClass { Id=6, Title = "Title06", Description = "Description06", Descriptions = [],},
+
+            new TestClass { Id=7, Title = "Title07", Description = "Description07", Descriptions = [],},
+            new TestClass { Id=8, Title = "Title08", Description = "Description08", Descriptions = [],},
+
+            // new TestClass { Id=9, Title = "Title09", Description = "Description09",},
+            // new TestClass { Id=10, Title = "Title10", Description = "Description10",},
+
+        ];
+
+        // Console.WriteLine(modalType.ToString());
+
+        doneLoadingLst = true;
+    }
+
+    private async Task OnCreate(List<TestClass> items)
+    {
+        //TestLst.AddRange(items);
+        Console.WriteLine("added items");
+        // TODO: apply changes here to db in real-world scenario as well
+
+    }
+
+    private async Task OnDelete(TestClass item)
+    {
+        // var response = await confirmModal.ShowAsync();
+        if (true)
+        {
+            Console.WriteLine("deleting item");
+            // TODO: apply changes here to db in real-world scenario as well
+            //TestLst = TestLst.Where(o=>o.GetPrimaryKey() != item.GetPrimaryKey()).ToList();
+
+
+        }
+    }
+
+    private async Task OnUpdate(TestClass item)
+    {
+        for (int i = 0; i < TestLst.Count; i++)
+        {
+            if (TestLst[i].Id == item.Id)
+            {
+                TestLst[i].Title = item.Title;
+                TestLst[i].Description = item.Description;
+                TestLst[i].Descriptions = item.Descriptions;
+
+                // TODO: apply changes here to db in real-world scenario as well
+            }
+        }
+    }
+
+    private HandyToast handyToast = default!;
+    private EventCallback<IEnumerable<TestClass>> SubmitFileAction =>
+    EventCallback.Factory.Create<IEnumerable<TestClass>>(this, OnSubmitFile);
+    private NotificationModal notificationModal { get; set; }
+
+    private List<TestClass> PasswordAccountLst { get; set; }
+    private List<string> ReadonlyColumns = ["Id"];
+
+
+    private Func<TestClass, List<string>, GridValidationResponse> ValidationChecks =>
+    (o, columns) =>
+    {
+        //var columns = typeof(PasswordAccountDTO).GetProperties().Select(prop => prop.Name).Except(ReadonlyColumns).ToList();
+        Dictionary<int, List<string>> errorMessagesDict = new();
+
+        int titleIndex = columns.IndexOf(nameof(o.Title));
+        int descriptionIndex = columns.IndexOf(nameof(o.Description));
+        int descriptionsIndex = columns.IndexOf(nameof(o.Descriptions));
+
+        // Console.WriteLine($"{titleIndex},{userNameIndex},{passwordIndex}");
+
+        if (string.IsNullOrWhiteSpace(o.Title))
+        {
+            if (errorMessagesDict.ContainsKey(titleIndex))
+            {
+                errorMessagesDict[titleIndex].Add($"Please fill out {nameof(o.Title)}");
+            }
+            else
+            {
+                errorMessagesDict.Add(titleIndex, [$"Please fill out {nameof(o.Title)}"]);
+            }
+        }
+        if (string.IsNullOrWhiteSpace(o.Description))
+        {
+            if (errorMessagesDict.ContainsKey(descriptionIndex))
+            {
+                errorMessagesDict[descriptionIndex].Add($"Please fill out {nameof(o.Description)}");
+            }
+            else
+            {
+                errorMessagesDict.Add(descriptionIndex, [$"Please fill out {nameof(o.Description)}"]);
+            }
+        }
+        if (string.IsNullOrWhiteSpace(string.Join(",",o.Descriptions)))
+        {
+            if (errorMessagesDict.ContainsKey(descriptionsIndex))
+            {
+                errorMessagesDict[descriptionsIndex].Add($"Please select at least one {nameof(o.Descriptions)}");
+            }
+            else
+            {
+                errorMessagesDict.Add(descriptionsIndex, [$"Please select at least one {nameof(o.Descriptions)}"]);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(o.Title) && o.Title?.Length > 256)
+        {
+            if (errorMessagesDict.ContainsKey(titleIndex))
+            {
+                errorMessagesDict[titleIndex].Add("Please make sure all fields are under 256 characters");
+            }
+            else
+            {
+                errorMessagesDict.Add(titleIndex, ["Please make sure all fields are under 256 characters"]);
+            }
+        }
+        if (!string.IsNullOrWhiteSpace(o.Description) && o.Description?.Length > 256)
+        {
+            if (errorMessagesDict.ContainsKey(descriptionIndex))
+            {
+                errorMessagesDict[descriptionIndex].Add("Please make sure all fields are under 256 characters");
+            }
+            else
+            {
+                errorMessagesDict.Add(descriptionIndex, ["Please make sure all fields are under 256 characters"]);
+            }
+        }
+
+        if (errorMessagesDict.Any())
+        {
+            return new GridValidationResponse(Flag: false, errorMessagesDict);
+        }
+
+        return new GridValidationResponse(Flag: true, null);
+    };
+}
+

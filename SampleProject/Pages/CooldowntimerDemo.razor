@@ -1,0 +1,15 @@
+@page "/cooldowntimer-demo"
+
+<label>Cooldown Timer Demo:</label>
+<button disabled="@(cooldownTimer?.IsCoolingDown ?? false)" class="btn btn-primary" @onclick="IncrementAttempt">
+    Click Me
+</button>
+<CooldownTimer @ref="cooldownTimer" CooldownTime="10" MaxAttempts="5" OnCooldownComplete="()=>StateHasChanged()" />
+
+@code {
+    private CooldownTimer cooldownTimer = default!;
+    private async Task IncrementAttempt()
+    {
+        cooldownTimer.IncrementSubmissionCount();
+    }
+}

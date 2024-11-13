@@ -3,8 +3,8 @@ namespace HandyBlazorComponents.Models;
 
 public enum HandyToastType
 {
-    Info,
-    Success,
-    Warning,
-    Error
+    ERROR,
+    WARNING,
+    SUCCESS,
+    INFO,
 }

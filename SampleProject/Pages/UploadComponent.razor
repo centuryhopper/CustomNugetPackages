@@ -1,0 +1,124 @@
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Components.Forms
+
+@typeparam TItem where TItem : class, new()
+@typeparam TMapper where TMapper : ClassMap
+
+<div class="m-3 p-3" style="overflow-y: scroll; height: 30rem;">
+    <InputFile OnChange="HandleFileSelected" />
+    <br>
+    <button disabled="@loading" @onclick="SubmitFile" class="btn btn-primary mt-3">
+        @if (loading)
+        {
+            <span class="spinner-border spinner-border-sm mr-1"></span>
+        }
+        Submit
+    </button>
+    <p>@message</p>
+
+    <div>
+        <span class="mt-3 font-weight-bold">
+            Click on the link to get the CSV file format sample:
+            <a href="@ExampleFileUploadUrl">Example File</a>
+        </span>
+    </div>
+</div>
+
+<NotificationModal @ref="notificationModal" />
+
+
+@code {
+    private NotificationModal notificationModal { get; set; }
+
+    private IBrowserFile selectedFile;
+    private string message = string.Empty;
+    private bool loading = false;
+
+    [CascadingParameter(Name = nameof(SubmitFileAction))]
+    public EventCallback<IEnumerable<TItem>> SubmitFileAction { get; set; }
+
+    [CascadingParameter(Name = nameof(ExampleFileUploadUrl))]
+    public string ExampleFileUploadUrl { get; set; }
+
+
+    private static object? GetPropertyValue(TItem item, string propertyName)
+    {
+        //Console.WriteLine(item);
+        dynamic value = typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+        if (value is IEnumerable<string>)
+        {
+            return string.Join(",", value);
+        }
+
+        return value;
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+
+        if (selectedFile == null || selectedFile.Size == 0)
+        {
+            await notificationModal.ShowAsync("Error", "No file selected or file is empty.", HandyModalType.ERROR);
+        }
+        else
+        {
+            await notificationModal.ShowAsync("Success", $"File selected: {selectedFile.Name}", HandyModalType.SUCCESS);
+        }
+    }
+
+    private async Task SubmitFile()
+    {
+        if (selectedFile == null || selectedFile.Size == 0)
+        {
+            await notificationModal.ShowAsync("Error", "No file selected or file is empty.", HandyModalType.ERROR);
+            return;
+        }
+
+        loading = true;
+        List<TItem> results = new();
+
+        try
+        {
+            // Set up CSV Helper configuration
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = true,
+                HeaderValidated = null,  // Allow files with missing headers
+                MissingFieldFound = null, // Allow missing fields without errors
+            };
+
+            // Use StreamReader on the selected file's stream directly
+            using var streamReader = new StreamReader(selectedFile.OpenReadStream(selectedFile.Size));
+            using var csvReader = new CsvReader(streamReader, config);
+
+            // Register the class map for TItem
+            csvReader.Context.RegisterClassMap<TMapper>();
+
+            // Asynchronously enumerate through CSV records and add to results list
+            await foreach (var record in csvReader.GetRecordsAsync<TItem>())
+            {
+                results.Add(record);
+            }
+
+            // Invoke the file submission action with the list of parsed items
+            await SubmitFileAction.InvokeAsync(results);
+
+        }
+        catch (CsvHelperException ex)
+        {
+            await notificationModal.ShowAsync("Error", ex.Message, HandyModalType.ERROR);
+        }
+        catch (Exception ex)
+        {
+            await notificationModal.ShowAsync("Error", ex.Message, HandyModalType.ERROR);
+        }
+        finally
+        {
+            // Optionally reload the current page
+            // NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            loading = false;
+        }
+    }
+
+}

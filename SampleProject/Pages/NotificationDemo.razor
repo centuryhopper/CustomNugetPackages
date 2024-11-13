@@ -1,0 +1,37 @@
+@page "/notification-demo"
+
+
+<NotificationModal @ref="notificationModal" />
+
+<label>Notification Modal demo:</label>
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Notice!", "This is an info pop up", HandyModalType.INFO))">
+                Show Info Popup
+            </button>
+        </div>
+        <div class="col">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Warning!", "This is a warning pop up", HandyModalType.WARNING))">
+                Show Warning Popup
+            </button>
+        </div>
+        <div class="col">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Success!", "This is a success pop up", HandyModalType.SUCCESS))">
+                Show Success Popup
+            </button>
+        </div>
+        <div class="col">
+            <button class="btn btn-primary" @onclick="@(()=>ShowNotification("Error!", "This is an error pop up", HandyModalType.ERROR))">
+                Show Error Popup
+            </button>
+        </div>
+    </div>
+
+@code {
+
+    private NotificationModal notificationModal = default!;
+    private async Task ShowNotification(string Title, string Message, HandyModalType modalType)
+    {
+        await notificationModal.ShowAsync(Title, Message, modalType);
+    }
+}

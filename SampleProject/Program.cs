@@ -1,7 +1,8 @@
+global using CsvHelper.Configuration;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SampleProject;
-// using MudBlazor.Services;
 
 /*
 dotnet tool install --global dotnet-outdated-tool
