@@ -58,9 +58,9 @@
                     {
                         <td>
                             @* edit mode cases *@
-                            @if (!ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
+                            @if (!HandyGridState.ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
                             {
-                                @if (EditModeFragments != null && EditModeFragments.TryGetValue(columnName, out var template))
+                                @if (HandyGridState.EditModeFragments != null && HandyGridState.EditModeFragments.TryGetValue(columnName, out var template))
                                 {
                                     <div class="d-flex align-items-center p-3">
                                         @template(pagedItemsHelper[rowIdx])
@@ -78,7 +78,7 @@
                             @* view mode cases *@
                             else
                             {
-                                @if (ViewModeFragments != null && ViewModeFragments.TryGetValue(columnName, out var template))
+                                @if (HandyGridState.ViewModeFragments != null && HandyGridState.ViewModeFragments.TryGetValue(columnName, out var template))
                                 {
                                     @template(pagedItemsHelper[rowIdx])
                                 }
@@ -124,30 +124,19 @@
 <UploadComponent TItem="TItem" TMapper="TMapper"/>
 
 @code {
-    ConfirmModal confirmModal = default!;
-    NotificationModal notificationModal = default!;
-    AddDynamicItemsModal<TItem> AddDynamicItemsModal = default!;
-
-    [CascadingParameter(Name = nameof(ValidationChecks))]
-    Func<TItem, List<string>, GridValidationResponse> ValidationChecks { get; set; }
-
-    [CascadingParameter(Name = nameof(EditModeFragments))]
-    public Dictionary<string, RenderFragment<TItem>>? EditModeFragments { get; set; }
+    private ConfirmModal confirmModal = default!;
+    private NotificationModal notificationModal = default!;
+    private AddDynamicItemsModal<TItem> AddDynamicItemsModal = default!;
+    
+    [CascadingParameter(Name = nameof(HandyGridState))]
+    public IHandyGridState<TItem> HandyGridState { get; set; }
 
     [Parameter]
-    public Dictionary<string, RenderFragment<TItem>>? ViewModeFragments { get; set; }
-
-    [CascadingParameter(Name = nameof(Items))]
-    public List<TItem> Items { get; set; } = new();
-
-    [Parameter]
-    public EventCallback<List<TItem>> OnCreate { get; set; }
+    public EventCallback<IEnumerable<TItem>> OnCreate { get; set; }
     [Parameter]
     public EventCallback<TItem> OnUpdate { get; set; }
     [Parameter]
     public EventCallback<TItem> OnDelete { get; set; }
-    [CascadingParameter(Name = nameof(ReadonlyColumns))]
-    public List<string> ReadonlyColumns { get; set; }
 
 
 
@@ -161,7 +150,7 @@
     private Dictionary<string, string> FilterValues { get; set; } = new();
     private List<string>? Columns { get; set; }
     private IEnumerable<TItem> filteredItems =>
-    Items.Where(item => FilterQuery(item));
+    HandyGridState.Items.Where(item => FilterQuery(item));
 
     private List<TItem> pagedItems = new();
     /// <summary>
@@ -194,20 +183,20 @@
     private async Task AddNewItems()
     {
         ItemsToAdd = await AddDynamicItemsModal.ShowAsync();
-        //ItemsToAdd.ForEach(item => Console.WriteLine(item));
-        int maxId = Items.Max(o=>o.GetPrimaryKey());
+        // ItemsToAdd.ForEach(item => Console.WriteLine(item));
+        int maxId = HandyGridState.Items.Max(o=>o.GetPrimaryKey());
+        // Console.WriteLine("maxId: " + maxId);
         if (ItemsToAdd.Any())
         {
             for (int i = 0;i < ItemsToAdd.Count;i++)
             {
-                ItemsToAdd[i].SetPrimaryKey(maxId+1);
-                maxId++;
+                ItemsToAdd[i].SetPrimaryKey(++maxId);
             }
 
-            Items.AddRange(ItemsToAdd);
+            HandyGridState.Items.AddRange(ItemsToAdd);
 
             // server call
-            await OnCreate.InvokeAsync(ItemsToAdd);
+            await OnCreate.InvokeAsync(ItemsToAdd.AsEnumerable());
         }
     }
 
@@ -476,7 +465,7 @@
     private async Task UpdateRow(int rowIdx, TItem item)
     {
         // find out rows that have errors
-        var validation = ValidationChecks(item, Columns);
+        var validation = HandyGridState.ValidationChecks(item, Columns);
         if (!validation.Flag)
         {
             // reset
@@ -509,9 +498,9 @@
             return;
         }
 
-        for (int i = 0; i < Items.Count; i++)
+        for (int i = 0; i < HandyGridState.Items.Count; i++)
         {
-            if (Items[i].GetPrimaryKey() == item.GetPrimaryKey())
+            if (HandyGridState.Items[i].GetPrimaryKey() == item.GetPrimaryKey())
             {
                 var props = new Dictionary<string,object>();
                 
@@ -521,7 +510,7 @@
                     props.Add(columnName, GetPropertyValue(item, columnName));
                 }
 
-                Items[i].SetProperties(props);
+                HandyGridState.Items[i].SetProperties(props);
             }
         }
 
@@ -534,10 +523,10 @@
         var response = await confirmModal.ShowAsync();
         if (response)
         {
-            var itemToRemove = Items.FirstOrDefault(o=>o.GetPrimaryKey() == item.GetPrimaryKey());
+            var itemToRemove = HandyGridState.Items.FirstOrDefault(o=>o.GetPrimaryKey() == item.GetPrimaryKey());
             if (itemToRemove != null)
             {
-                Items.Remove(itemToRemove);
+                HandyGridState.Items.Remove(itemToRemove);
             }
             //Console.WriteLine(Items.Count);
             await OnDelete.InvokeAsync(item);
@@ -595,7 +584,7 @@
     {
         var result = string.Join(",", Columns);
         result += '\n';
-        foreach (var acc in Items)
+        foreach (var acc in HandyGridState.Items)
         {
             var stringified = Columns.Select(col => acc.DisplayPropertyInGrid(col).ToString()?.Replace(",", "+"));
             result += $"{string.Join(",", stringified)}\n";

@@ -1,7 +1,6 @@
 @using System.Net.Http.Headers
 @using Microsoft.AspNetCore.Components.Forms
 
-
 @typeparam TItem where TItem : class, IHandyGridEntity, new()
 @typeparam TMapper where TMapper : ClassMap
 
@@ -20,7 +19,7 @@
     <div>
         <span class="mt-3 font-weight-bold">
             Click on the link to get the CSV file format sample:
-            <a href="@ExampleFileUploadUrl">Example File</a>
+            <a href="@(HandyGridState.ExampleFileUploadUrl)">Example File</a>
         </span>
     </div>
 </div>
@@ -29,25 +28,18 @@
 
 
 @code {
+
+    [CascadingParameter(Name = nameof(HandyGridState))]
+    public IHandyGridState<TItem> HandyGridState { get; set; }
     private NotificationModal notificationModal { get; set; }
 
     private IBrowserFile selectedFile;
     private string message = string.Empty;
     private bool loading = false;
 
-    [CascadingParameter(Name = nameof(SubmitFileAction))]
-    public EventCallback<IEnumerable<TItem>> SubmitFileAction { get; set; }
-
-    [CascadingParameter(Name = nameof(ExampleFileUploadUrl))]
-    public string ExampleFileUploadUrl { get; set; }
-
-    [CascadingParameter(Name = nameof(Items))]
-    public List<TItem> Items { get; set; } = new();
-
-
     private static object? GetPropertyValue(TItem item, string propertyName)
     {
-        //Console.WriteLine(item);
+        // Console.WriteLine(item);
         dynamic value = typeof(TItem).GetProperty(propertyName)?.GetValue(item);
         return value;
     }
@@ -112,12 +104,14 @@
                 }
 
                 results[i].ParsePropertiesFromCSV(props);
+                int maxId = HandyGridState.Items.Max(o=>o.GetPrimaryKey());
+                results[i].SetPrimaryKey(++maxId);
             }
 
-            Items.AddRange(results);
+            HandyGridState.Items.AddRange(results);
 
             // Invoke the file submission action with the list of parsed items
-            await SubmitFileAction.InvokeAsync(results);
+            await HandyGridState.SubmitFileAction.InvokeAsync(results);
 
         }
         catch (CsvHelperException ex)

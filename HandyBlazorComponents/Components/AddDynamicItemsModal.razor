@@ -40,7 +40,7 @@
                                             @foreach (var (columnIdx, columnName) in Columns.Select((columnName, columnIdx) => (columnIdx, columnName)))
                                             {
                                                 <td>
-                                                    @if (EditModeFragments != null && EditModeFragments.TryGetValue(columnName, out var template))
+                                                    @if (HandyGridState.EditModeFragments != null && HandyGridState.EditModeFragments.TryGetValue(columnName, out var template))
                                                     {
                                                         <div class="d-flex align-items-center p-3">
                                                             @template(ItemsToAdd[rowIdx])
@@ -86,8 +86,8 @@
     [Parameter]
     public string Title { get; set; } = "Items To Add";
 
-    [CascadingParameter(Name = nameof(ValidationChecks))]
-    Func<TItem, List<string>, GridValidationResponse> ValidationChecks {get;set;}
+    [CascadingParameter(Name = nameof(HandyGridState))]
+    public IHandyGridState<TItem> HandyGridState { get; set; }
 
     private string[,] _errorMessages;
 
@@ -103,21 +103,15 @@
         }
         set => _errorMessages = value;
     }
-
-    [CascadingParameter(Name = nameof(EditModeFragments))]
-    public Dictionary<string, RenderFragment<TItem>>? EditModeFragments { get; set; }
     
     private List<string>? Columns { get; set; }
-
-    [CascadingParameter(Name = nameof(ReadonlyColumns))]
-    public List<string> ReadonlyColumns {get;set;}
 
     protected override void OnInitialized()
     {
         // remove readonly columns from your columns
         Columns = typeof(TItem).GetProperties()
         .Select(prop => prop.Name)
-        .Except(ReadonlyColumns)
+        .Except(HandyGridState.ReadonlyColumns)
         .ToList();
     }
 
@@ -160,7 +154,7 @@
         // find out rows that have errors
         foreach (var (rowIdx, item) in ItemsToAdd.Select((item, rowIdx) => (rowIdx, item)))
         {
-            var validation = ValidationChecks(item, Columns.ToList());
+            var validation = HandyGridState.ValidationChecks(item, Columns.ToList());
             //Console.WriteLine(validation.ColumnIndex);
             if (!validation.Flag)
             {

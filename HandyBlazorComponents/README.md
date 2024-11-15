@@ -121,3 +121,5 @@ Configuration:
 
 - Add this to your index.html:
     ``<script src="_content/HandyBlazorComponents/handyBlazorComponents.js"></script>``
+
+This package is still actively under development and changes are constantly made so use at your own risk.
