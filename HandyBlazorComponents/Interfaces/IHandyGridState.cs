@@ -1,7 +1,10 @@
+using HandyBlazorComponents.Abstracts;
 using Microsoft.AspNetCore.Components;
 using static HandyBlazorComponents.Models.ServiceResponses;
 
-public interface IHandyGridState<T>
+namespace HandyBlazorComponents.Interfaces;
+
+public interface IHandyGridState<T, U> where T : HandyGridEntityAbstract<U> where U : class, new()
 {
     List<T> Items { get; set; }
     GridValidationResponse ValidationChecks(T item, List<string> columns);

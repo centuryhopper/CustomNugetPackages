@@ -1,7 +1,9 @@
 @using System.Net.Http.Headers
+@using CsvHelper
 @using Microsoft.AspNetCore.Components.Forms
 
-@typeparam TItem where TItem : class, IHandyGridEntity, new()
+@typeparam TItem where TItem : class, new()
+@typeparam Entity where Entity : HandyGridEntityAbstract<TItem>, new()
 @typeparam TMapper where TMapper : ClassMap
 
 <div class="m-3 p-3" style="overflow-y: scroll; height: 30rem;">
@@ -30,7 +32,7 @@
 @code {
 
     [CascadingParameter(Name = nameof(HandyGridState))]
-    public IHandyGridState<TItem> HandyGridState { get; set; }
+    public IHandyGridState<Entity,TItem> HandyGridState { get; set; }
     private NotificationModal notificationModal { get; set; }
 
     private IBrowserFile selectedFile;
@@ -67,7 +69,7 @@
         }
 
         loading = true;
-        List<TItem> results = new();
+        List<Entity> results = new();
 
         try
         {
@@ -91,7 +93,9 @@
             // Asynchronously enumerate through CSV records and add to results list
             await foreach (var record in csvReader.GetRecordsAsync<TItem>())
             {
-                results.Add(record);
+                Entity entity = new();
+                entity.Object = record;
+                results.Add(entity);
             }
 
             for (int i = 0;i < results.Count;i++)
@@ -100,7 +104,7 @@
                 
                 foreach (var columnName in columns)
                 {
-                    props.Add(columnName, GetPropertyValue(results[i], columnName));
+                    props.Add(columnName, GetPropertyValue(results[i].Object, columnName));
                 }
 
                 results[i].ParsePropertiesFromCSV(props);
