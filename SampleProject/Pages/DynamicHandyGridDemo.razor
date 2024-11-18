@@ -85,6 +85,8 @@ new TestClass { Id=8, Title = "Title08", Description = "Description08", Descript
 
         handyGridState.OnSubmitFile = async (results) => {
             Console.WriteLine("on submit file!");
+            // triggers a re-render in memory
+            handyGridState.Items.AddRange([]);
         };
 
         doneLoadingLst = true;

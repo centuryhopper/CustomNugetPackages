@@ -39,12 +39,12 @@
     private string message = string.Empty;
     private bool loading = false;
 
-    private static object? GetPropertyValue(TItem item, string propertyName)
-    {
-        // Console.WriteLine(item);
-        dynamic value = typeof(TItem).GetProperty(propertyName)?.GetValue(item);
-        return value;
-    }
+    //private static object? GetPropertyValue(TItem item, string propertyName)
+    //{
+    //    // Console.WriteLine(item);
+    //    dynamic value = typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+    //    return value;
+    //}
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
@@ -88,7 +88,7 @@
             // Register the class map for TItem
             csvReader.Context.RegisterClassMap<TMapper>();
 
-            var columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
+            //var columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
 
             // Asynchronously enumerate through CSV records and add to results list
             await foreach (var record in csvReader.GetRecordsAsync<TItem>())
@@ -102,9 +102,10 @@
             {
                 var props = new Dictionary<string,object>();
                 
-                foreach (var columnName in columns)
+                foreach (var columnName in HandyGridState.Columns)
                 {
-                    props.Add(columnName, GetPropertyValue(results[i].Object, columnName));
+                    props.Add(columnName, results[i].GetPropertyValue(columnName));
+                    //props.Add(columnName, GetPropertyValue(results[i].Object, columnName));
                 }
 
                 results[i].ParsePropertiesFromCSV(props);

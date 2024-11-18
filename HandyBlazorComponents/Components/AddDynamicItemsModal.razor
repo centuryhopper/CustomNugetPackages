@@ -50,8 +50,14 @@
                                                     else
                                                     {
                                                         <div class="d-flex align-items-center p-3">
-                                                            <input value="@(GetPropertyValue(ItemsToAdd[rowIdx].Object, columnName))"
+                                                            @* <input value="@(GetPropertyValue(ItemsToAdd[rowIdx].Object, columnName))"
                                                                 @oninput="(e) => SetPropertyValue(ItemsToAdd[rowIdx].Object, e.Value, columnName)" class="form-control"
+                                                                style="width: 10rem" /> *@
+                                                            @* <input value="@(ItemsToAdd[rowIdx].GetPropertyValue(columnName))"
+                                                                @oninput="(e) => SetPropertyValue(ItemsToAdd[rowIdx].Object, e.Value, columnName)" class="form-control"
+                                                                style="width: 10rem" /> *@
+                                                            <input value="@(ItemsToAdd[rowIdx].GetPropertyValue(columnName))"
+                                                                @oninput="(e) => ItemsToAdd[rowIdx].SetPropertyValue(columnName, e.Value)" class="form-control"
                                                                 style="width: 10rem" />
                                                         </div>
                                                     }
@@ -110,8 +116,7 @@
     protected override void OnInitialized()
     {
         // remove readonly columns from your columns
-        Columns = typeof(TItem).GetProperties()
-        .Select(prop => prop.Name)
+        Columns = HandyGridState.Columns
         .Except(HandyGridState.ReadonlyColumns)
         .ToList();
     }
@@ -122,20 +127,20 @@
         ItemsToAdd.Add(item);
     }
 
-    private object? GetPropertyValue(TItem item, string propertyName)
-    {
-        //Console.WriteLine(item);
-        return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
-    }
+    //private object? GetPropertyValue(TItem item, string propertyName)
+    //{
+    //    //Console.WriteLine(item);
+    //    return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+    //}
 
-    private void SetPropertyValue(TItem item, object? value, string propertyName)
-    {
-        var property = typeof(TItem).GetProperty(propertyName);
-        if (property != null && property.CanWrite && value != null)
-        {
-            property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
-        }
-    }
+    //private void SetPropertyValue(TItem item, object? value, string propertyName)
+    //{
+    //    var property = typeof(TItem).GetProperty(propertyName);
+    //    if (property != null && property.CanWrite && value != null)
+    //    {
+    //        property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
+    //    }
+    //}
 
     private void RemoveItem(HandyGridEntity entity)
     {

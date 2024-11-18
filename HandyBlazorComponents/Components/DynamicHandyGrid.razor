@@ -20,7 +20,7 @@
                 <th>
                     Actions
                 </th>
-                @foreach (var column in Columns)
+                @foreach (var column in HandyGridState.Columns)
                 {
                     <th>
                         <button @onclick="@(() => SortData(column))" class="btn btn-primary">
@@ -55,7 +55,7 @@
                             <button @onclick="@(() => BeginEdit(rowIdx))" class="btn btn-primary">Edit</button>
                         }
                     </td>
-                    @foreach (var (columnIdx, columnName) in Columns.Select((columnName, columnIdx) => (columnIdx,
+                    @foreach (var (columnIdx, columnName) in HandyGridState.Columns.Select((columnName, columnIdx) => (columnIdx,
                    columnName)))
                     {
                         <td>
@@ -152,7 +152,7 @@
 
     private List<bool> AllowEdits = new();
     private Dictionary<string, string> FilterValues { get; set; } = new();
-    private List<string>? Columns { get; set; }
+    //private List<string>? Columns { get; set; }
     private IEnumerable<HandyGridEntity> filteredItems =>
     HandyGridState.Items.Where(item => FilterQuery(item));
 
@@ -175,9 +175,9 @@
         get
         {
             if (_errorMessages == null || _errorMessages.GetLength(0) != pagedItemsHelper.Count || _errorMessages.GetLength(1) !=
-            (Columns?.Count ?? 0))
+            (HandyGridState.Columns?.Count ?? 0))
             {
-                _errorMessages = new string[pagedItemsHelper.Count, Columns?.Count ?? 0];
+                _errorMessages = new string[pagedItemsHelper.Count, HandyGridState.Columns?.Count ?? 0];
             }
             return _errorMessages;
         }
@@ -284,7 +284,7 @@
         filter => string.IsNullOrWhiteSpace(filter)
         );
 
-        bool containsCheck = Columns
+        bool containsCheck = HandyGridState.Columns
         .Any(columnName =>
         !string.IsNullOrWhiteSpace(FilterValues[columnName]) &&
         item.DisplayPropertyInGrid(columnName).ToString().Contains(FilterValues[columnName],
@@ -301,8 +301,8 @@
 
     protected override void OnInitialized()
     {
-        Columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
-        foreach (var column in Columns)
+        //Columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
+        foreach (var column in HandyGridState.Columns)
         {
             FilterValues.Add(column, string.Empty);
         }
@@ -314,7 +314,7 @@
     private async Task UpdateRow(int rowIdx, HandyGridEntity item)
     {
         // find out rows that have errors
-        var validation = HandyGridState.ValidationChecks(item, Columns);
+        var validation = HandyGridState.ValidationChecks(item, HandyGridState.Columns);
         if (!validation.Flag)
         {
             // reset
@@ -353,7 +353,7 @@
             {
                 var props = new Dictionary<string, object>();
 
-                foreach (var columnName in Columns)
+                foreach (var columnName in HandyGridState.Columns)
                 {
                     // SetPropertyValue(Items[i], item, columnName);
                     props.Add(columnName, item.GetPropertyValue(columnName)!);
@@ -392,7 +392,7 @@
             ErrorMessages[rowIdx, columnIdx] = "";
         }
 
-        foreach (var columnName in Columns)
+        foreach (var columnName in HandyGridState.Columns)
         {
             //SetPropertyValue(pagedItemsHelper[rowIdx], GetPropertyValue(pagedItems[rowIdx], columnName), columnName);
             pagedItemsHelper[rowIdx].SetPropertyValue(columnName, pagedItems[rowIdx].GetPropertyValue(columnName));
@@ -434,11 +434,11 @@
 
     private async Task ExportTableAsCsv()
     {
-        var result = string.Join(",", Columns);
+        var result = string.Join(",", HandyGridState.Columns);
         result += '\n';
         foreach (var acc in HandyGridState.Items)
         {
-            var stringified = Columns.Select(col => acc.DisplayPropertyInGrid(col).ToString()?.Replace(",", "+"));
+            var stringified = HandyGridState.Columns.Select(col => acc.DisplayPropertyInGrid(col).ToString()?.Replace(",", "+"));
             result += $"{string.Join(",", stringified)}\n";
         }
         await jsRuntime.InvokeVoidAsync("saveAsFile", "data.csv", result);
