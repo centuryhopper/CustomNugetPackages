@@ -5,22 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http.Json;
 using Client.Models;
-using Client.Utils;
 using HandyBlazorComponents.Interfaces;
 using Microsoft.AspNetCore.Components;
-using Shared.Models;
 using static HandyBlazorComponents.Models.ServiceResponses;
 
 public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
 {
     public GridValidationResponse ValidationChecks(HandyGridEntity item, List<string> columns)
     {
-        //var columns = typeof(PasswordAccountDTO).GetProperties().Select(prop => prop.Name).Except(ReadonlyColumns).ToList();
         Dictionary<int, List<string>> errorMessagesDict = new();
 
         int titleIndex = columns.IndexOf(nameof(item.Object.Title));
-        int userNameIndex = columns.IndexOf(nameof(item.Object.Username));
-        int passwordIndex = columns.IndexOf(nameof(item.Object.Password));
+        int descriptionIndex = columns.IndexOf(nameof(item.Object.Description));
+        int descriptionsIndex = columns.IndexOf(nameof(item.Object.Descriptions));
 
         // Console.WriteLine($"{titleIndex},{userNameIndex},{passwordIndex}");
 
@@ -35,26 +32,26 @@ public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
                 errorMessagesDict.Add(titleIndex, [$"Please fill out {nameof(item.Object.Title)}"]);
             }
         }
-        if (string.IsNullOrWhiteSpace(item.Object.Username))
+        if (string.IsNullOrWhiteSpace(item.Object.Description))
         {
-            if (errorMessagesDict.ContainsKey(userNameIndex))
+            if (errorMessagesDict.ContainsKey(descriptionIndex))
             {
-                errorMessagesDict[userNameIndex].Add($"Please fill out {nameof(item.Object.Username)}");
+                errorMessagesDict[descriptionIndex].Add($"Please fill out {nameof(item.Object.Description)}");
             }
             else
             {
-                errorMessagesDict.Add(userNameIndex, [$"Please fill out {nameof(item.Object.Username)}"]);
+                errorMessagesDict.Add(descriptionIndex, [$"Please fill out {nameof(item.Object.Description)}"]);
             }
         }
-        if (string.IsNullOrWhiteSpace(item.Object.Password))
+        if (!item.Object.Descriptions.Any())
         {
-            if (errorMessagesDict.ContainsKey(passwordIndex))
+            if (errorMessagesDict.ContainsKey(descriptionsIndex))
             {
-                errorMessagesDict[passwordIndex].Add($"Please fill out {nameof(item.Object.Password)}");
+                errorMessagesDict[descriptionsIndex].Add($"Please make at least one selection for {nameof(item.Object.Descriptions)}");
             }
             else
             {
-                errorMessagesDict.Add(passwordIndex, [$"Please fill out {nameof(item.Object.Password)}"]);
+                errorMessagesDict.Add(descriptionsIndex, [$"Please make at least one selection for {nameof(item.Object.Descriptions)}"]);
             }
         }
 
@@ -69,27 +66,19 @@ public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
                 errorMessagesDict.Add(titleIndex, ["Please make sure all fields are under 256 characters"]);
             }
         }
-        if (!string.IsNullOrWhiteSpace(item.Object.Username) && item.Object.Username?.Length > 256)
+        if (!string.IsNullOrWhiteSpace(item.Object.Description) && item.Object.Description?.Length > 256)
         {
-            if (errorMessagesDict.ContainsKey(userNameIndex))
+            if (errorMessagesDict.ContainsKey(descriptionIndex))
             {
-                errorMessagesDict[userNameIndex].Add("Please make sure all fields are under 256 characters");
+                errorMessagesDict[descriptionIndex].Add("Please make sure all fields are under 256 characters");
             }
             else
             {
-                errorMessagesDict.Add(userNameIndex, ["Please make sure all fields are under 256 characters"]);
+                errorMessagesDict.Add(descriptionIndex, ["Please make sure all fields are under 256 characters"]);
             }
         }
-        if (!string.IsNullOrWhiteSpace(item.Object.Password) && item.Object.Password?.Length > 256)
-        {
-            if (errorMessagesDict.ContainsKey(passwordIndex))
-                errorMessagesDict[passwordIndex].Add("Please make sure all fields are under 256 characters");
-            else
-                errorMessagesDict.Add(passwordIndex, ["Please make sure all fields are under 256 characters"]);
-        }
-
+        
         // Console.WriteLine($"{titleIndex},{userNameIndex},{passwordIndex}");
-
 
         if (errorMessagesDict.Any())
         {
@@ -101,7 +90,7 @@ public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
     public List<HandyGridEntity> Items { get; set; }
     public Dictionary<string, RenderFragment<HandyGridEntity>> EditModeFragments { get; set; }
     public Dictionary<string, RenderFragment<HandyGridEntity>> ViewModeFragments { get; set; }
-    public IReadOnlyCollection<string> ReadonlyColumns { get; set; }
+    public IReadOnlyCollection<string> ReadonlyColumns { get; set; } = [nameof(TestClass.Id)];
     public string ExampleFileUploadUrl { get; set; } = "templates/example.csv";
     public Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile {get;set;}
 

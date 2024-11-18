@@ -1,5 +1,7 @@
 global using CsvHelper.Configuration;
-
+using Client.Models;
+using Client.Services;
+using HandyBlazorComponents.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SampleProject;
@@ -14,7 +16,8 @@ the commands above will tell you which of your nuget packages need to be updated
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-// builder.Services.AddMudServices();
+builder.Services.AddSingleton<IHandyGridState<HandyGridEntity, TestClass>, GridStateService>();
+
 
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

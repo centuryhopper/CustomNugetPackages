@@ -1,7 +1,6 @@
 
 using HandyBlazorComponents.Abstracts;
 using HandyBlazorComponents.Interfaces;
-using Shared.Models;
 
 namespace Client.Models;
 
@@ -24,16 +23,10 @@ public class HandyGridEntity : HandyGridEntityAbstract<TestClass>
                 return Object.Id;
             case nameof(Object.Title):
                 return Object.Title;
-            case nameof(Object.UserId):
-                return Object.UserId;
-            case nameof(Object.Username):
-                return Object.Username;
-            case nameof(Object.Password):
-                return Object.Password;
-            case nameof(Object.CreatedAt):
-                return Object.CreatedAt is null ? DateTime.Now.ToString("yyyy-MM-dd") : Object.CreatedAt.GetValueOrDefault().ToString("yyyy-MM-dd");
-            case nameof(Object.LastUpdatedAt):
-                return Object.LastUpdatedAt is null ? DateTime.Now.ToString("yyyy-MM-dd") : Object.LastUpdatedAt.GetValueOrDefault().ToString("yyyy-MM-dd");
+            case nameof(Object.Description):
+                return Object.Description;
+            case nameof(Object.Descriptions):
+                return string.Join(",", Object.Descriptions);
             default:
                 throw new Exception("Invalid property name");
         }
@@ -58,6 +51,5 @@ public class HandyGridEntity : HandyGridEntityAbstract<TestClass>
     {
         base.SetProperties(properties);
     }
-
 }
 
