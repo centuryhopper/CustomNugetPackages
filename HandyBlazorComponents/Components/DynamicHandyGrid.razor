@@ -1,12 +1,13 @@
 @typeparam TItem where TItem : class, new()
-@typeparam Entity where Entity : HandyGridEntityAbstract<TItem>, new()
+@typeparam HandyGridEntity where HandyGridEntity : HandyGridEntityAbstract<TItem>, new()
 @typeparam TMapper where TMapper : ClassMap
 @using System.Linq.Expressions
 
 
 @* This grid has pagination and filtering and sorting along with all CRUD operations *@
-@* Use only primitive types
+@* It is recommended to use only primitive types and certain reference types for the columns
     Usable reference types include only strings and ienumerables of either a string or primitive type
+    Other reference types have not been tested and it is recommended to convert them into strings when used
  *@
 
 <div class="text-center overflow-auto m-3">
@@ -114,7 +115,7 @@
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 <CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="OnPageChanged" />
 
-<AddDynamicItemsModal TItem="TItem" Entity="Entity" @ref="AddDynamicItemsModal" />
+<AddDynamicItemsModal TItem="TItem" HandyGridEntity="HandyGridEntity" @ref="AddDynamicItemsModal" />
 
 <button class="btn btn-primary" @onclick="AddNewItems">Add New Items</button>
 
@@ -124,22 +125,22 @@
 
 <NotificationModal @ref="notificationModal" />
 
-<UploadComponent TItem="TItem" TMapper="TMapper" Entity="Entity" />
+<UploadComponent TItem="TItem" TMapper="TMapper" HandyGridEntity="HandyGridEntity" />
 
 @code {
     private ConfirmModal confirmModal = default!;
     private NotificationModal notificationModal = default!;
-    private AddDynamicItemsModal<TItem, Entity> AddDynamicItemsModal = default!;
+    private AddDynamicItemsModal<TItem, HandyGridEntity> AddDynamicItemsModal = default!;
 
     [CascadingParameter(Name = nameof(HandyGridState))]
-    public IHandyGridState<Entity, TItem> HandyGridState { get; set; }
+    public IHandyGridState<HandyGridEntity, TItem> HandyGridState { get; set; }
 
     [Parameter]
-    public EventCallback<IEnumerable<Entity>> OnCreate { get; set; }
+    public EventCallback<IEnumerable<HandyGridEntity>> OnCreate { get; set; }
     [Parameter]
-    public EventCallback<Entity> OnUpdate { get; set; }
+    public EventCallback<HandyGridEntity> OnUpdate { get; set; }
     [Parameter]
-    public EventCallback<Entity> OnDelete { get; set; }
+    public EventCallback<HandyGridEntity> OnDelete { get; set; }
 
 
 
@@ -152,20 +153,20 @@
     private List<bool> AllowEdits = new();
     private Dictionary<string, string> FilterValues { get; set; } = new();
     private List<string>? Columns { get; set; }
-    private IEnumerable<Entity> filteredItems =>
+    private IEnumerable<HandyGridEntity> filteredItems =>
     HandyGridState.Items.Where(item => FilterQuery(item));
 
-    private List<Entity> pagedItems = new();
+    private List<HandyGridEntity> pagedItems = new();
     /// <summary>
     /// A temp list in the dynamic handy grid so that the cancel function can be used to revert back the old values in the
     /// original grid.
     /// Used in case we want to revert a change.
     /// </summary>
     /// <returns></returns>
-    private List<Entity> pagedItemsHelper = new();
+    private List<HandyGridEntity> pagedItemsHelper = new();
     private string sortColumn;
     private bool sortAscending = true;
-    private List<Entity> ItemsToAdd = new();
+    private List<HandyGridEntity> ItemsToAdd = new();
 
     private string[,] _errorMessages;
 
@@ -227,27 +228,6 @@
         UpdatePagedItems();
     }
 
-    private List<Entity> DeepCopy(List<Entity> originalLst)
-    {
-        List<Entity> deepCopy = new List<Entity>();
-        foreach (var originalItem in originalLst)
-        {
-            Entity copy = new();
-            foreach (var columnName in Columns)
-            {
-                if (columnName == "Descriptions")
-                {
-                    ;
-                }
-            var originalValue = originalItem.GetPropertyValue(columnName);
-                copy.SetPropertyValue(columnName, originalValue);
-            }
-            // Manually copy properties from item to copy if necessary
-            deepCopy.Add(copy);
-        }
-        return deepCopy;
-    }
-
     private void UpdatePagedItems()
     {
         var itemsQuery = filteredItems.AsQueryable();
@@ -255,10 +235,10 @@
         // Apply sorting using reflection
         if (!string.IsNullOrWhiteSpace(sortColumn))
         {
-            var param = Expression.Parameter(typeof(Entity), "entity");
+            var param = Expression.Parameter(typeof(HandyGridEntity), "entity");
 
-            // Navigate to the TItem property of Entity
-            var tItemProperty = Expression.PropertyOrField(param, "obj"); // Replace 'TItem' with the actual property name of Entity
+            // Navigate to the TItem property of HandyGridEntity
+            var tItemProperty = Expression.PropertyOrField(param, "obj"); // Replace 'TItem' with the actual property name of HandyGridEntity
 
             // Access the target property or field on TItem
             var property = Expression.PropertyOrField(tItemProperty, sortColumn);
@@ -279,7 +259,7 @@
             }
 
             // Create the lambda expression for sorting
-            var lambda = Expression.Lambda<Func<Entity, object>>(sortExpression, param);
+            var lambda = Expression.Lambda<Func<HandyGridEntity, object>>(sortExpression, param);
 
             // Apply sorting
             itemsQuery = sortAscending ? itemsQuery.OrderBy(lambda) : itemsQuery.OrderByDescending(lambda);
@@ -288,7 +268,7 @@
         pagedItems = itemsQuery.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
         //pagedItemsHelper = DeepCopy(pagedItems);
         pagedItemsHelper = pagedItems.Select(item => {
-            Entity entity = new Entity();
+            HandyGridEntity entity = new HandyGridEntity();
             entity.Object = item.DeepCopy();
             return entity;
         }).ToList();
@@ -298,7 +278,7 @@
         StateHasChanged();
     }
 
-    private bool FilterQuery(Entity item)
+    private bool FilterQuery(HandyGridEntity item)
     {
         bool nullOrWhiteSpaceCheck = FilterValues.Values.All(
         filter => string.IsNullOrWhiteSpace(filter)
@@ -331,145 +311,7 @@
         // Columns.ForEach(c=>Console.WriteLine(c));
     }
 
-    private object? GetPropertyValue(Entity entity, string propertyName)
-    {
-        //Console.WriteLine(item);
-        dynamic value = typeof(TItem).GetProperty(propertyName)?.GetValue(entity);
-        //if (value is IEnumerable<string>)
-        //{
-        // return string.Join(",", value);
-        //}
-
-
-        return value;
-    }
-
-    private void SetPropertyValue(Entity item, object? value, string propertyName)
-    {
-        var property = typeof(TItem).GetProperty(propertyName);
-        if (property != null && property.CanWrite)
-        {
-            var propertyType = property.PropertyType;
-
-            // Null handling for nullable types
-            if (value == null)
-            {
-                if (Nullable.GetUnderlyingType(propertyType) != null)
-                {
-                    property.SetValue(item, null);
-                }
-                return;
-            }
-
-            try
-            {
-                // Special handling for DateTime and Nullable<DateTime>
-                if (propertyType == typeof(DateTime) || propertyType == typeof(DateTime?))
-                {
-                    if (value is string stringValue && DateTime.TryParse(stringValue, out DateTime parsedDate))
-                    {
-                        property.SetValue(item, parsedDate);
-                    }
-                    else if (value is DateTime dateTimeValue)
-                    {
-                        property.SetValue(item, dateTimeValue);
-                    }
-                    else if (propertyType == typeof(DateTime?))
-                    {
-                        property.SetValue(item, null); // Set nullable DateTime to null if invalid
-                    }
-                }
-                // Handle integer types
-                else if (propertyType == typeof(int) || propertyType == typeof(int?))
-                {
-                    property.SetValue(item, Convert.ToInt32(value));
-                }
-                // Handle float types
-                else if (propertyType == typeof(float) || propertyType == typeof(float?))
-                {
-                    property.SetValue(item, Convert.ToSingle(value));
-                }
-                // Handle double types
-                else if (propertyType == typeof(double) || propertyType == typeof(double?))
-                {
-                    property.SetValue(item, Convert.ToDouble(value));
-                }
-                // Handle decimal types
-                else if (propertyType == typeof(decimal) || propertyType == typeof(decimal?))
-                {
-                    property.SetValue(item, Convert.ToDecimal(value));
-                }
-                // Handle boolean types
-                else if (propertyType == typeof(bool) || propertyType == typeof(bool?))
-                {
-                    property.SetValue(item, Convert.ToBoolean(value));
-                }
-                // Handle enums
-                else if (propertyType.IsEnum)
-                {
-                    if (value is string enumString && Enum.TryParse(propertyType, enumString, true, out var enumValue))
-                    {
-                        property.SetValue(item, enumValue);
-                    }
-                    else if (value.GetType().IsEnum && Enum.IsDefined(propertyType, value))
-                    {
-                        property.SetValue(item, value);
-                    }
-                }
-                // Handle nullable enums
-                else if (Nullable.GetUnderlyingType(propertyType)?.IsEnum == true)
-                {
-                    var underlyingType = Nullable.GetUnderlyingType(propertyType);
-                    if (value is string nullableEnumString && Enum.TryParse(underlyingType, nullableEnumString, true, out var
-                    nullableEnumValue))
-                    {
-                        property.SetValue(item, nullableEnumValue);
-                    }
-                }
-                // Handle List<string> specifically
-                else if (propertyType == typeof(List<string>))
-                {
-                    if (value is string str)
-                    {
-                        // Convert comma-separated string to List<string>
-                        var list = str.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-                        property.SetValue(item, list);
-                    }
-                    else if (value is IEnumerable<string> stringEnumerable)
-                    {
-                        // If value is already an IEnumerable<string>, convert to List<string>
-                        property.SetValue(item, stringEnumerable.ToList());
-                    }
-                }
-                // Handle other IEnumerable<T> types
-                else if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
-                {
-                    var elementType = propertyType.GetGenericArguments()[0];
-                    var method = typeof(Enumerable).GetMethod("Cast")?.MakeGenericMethod(elementType);
-                    var toListMethod = typeof(Enumerable).GetMethod("ToList")?.MakeGenericMethod(elementType);
-
-                    if (method != null && toListMethod != null && value is IEnumerable<object> enumerable)
-                    {
-                        var castedEnumerable = method.Invoke(null, new[] { enumerable });
-                        var list = toListMethod.Invoke(null, new[] { castedEnumerable });
-                        property.SetValue(item, list);
-                    }
-                }
-                // Handle other directly convertible types
-                else
-                {
-                    property.SetValue(item, Convert.ChangeType(value, propertyType));
-                }
-            }
-            catch (Exception ex)
-            {
-                // Handle or log exception if needed
-                Console.WriteLine($"Failed to set property {propertyName}: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task UpdateRow(int rowIdx, Entity item)
+    private async Task UpdateRow(int rowIdx, HandyGridEntity item)
     {
         // find out rows that have errors
         var validation = HandyGridState.ValidationChecks(item, Columns);
@@ -526,7 +368,7 @@
         await OnUpdate.InvokeAsync(item);
     }
 
-    private async Task DeleteRow(Entity entity)
+    private async Task DeleteRow(HandyGridEntity entity)
     {
         //Console.WriteLine(item.GetPrimaryKey());
         var response = await confirmModal.ShowAsync();
@@ -542,7 +384,7 @@
         }
     }
 
-    private async Task CancelEdit(int rowIdx, Entity entity)
+    private async Task CancelEdit(int rowIdx, HandyGridEntity entity)
     {
         // clear error messages
         for (var columnIdx = 0; columnIdx < ErrorMessages.GetLength(1); columnIdx++)
