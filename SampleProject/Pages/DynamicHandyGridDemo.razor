@@ -76,9 +76,13 @@
             .Select(item => new HandyGridEntity(Object: item))
             .OrderBy(item => item.Object.Id)
             .ToList(),
-            ReadonlyColumns: [],
-            ExampleFileUploadUrl: "",
-            OnSubmitFile: async (results) => {}
+            ReadonlyColumns: [nameof(TestClass.Id)],
+            ExampleFileUploadUrl: "templates/example.csv",
+            OnSubmitFile: async (results) => {
+                // Console.WriteLine("on submit file!");
+                // triggers a re-render in memory
+                
+            }
         );
 
         handyGridState.SetEditModeFragments(new()

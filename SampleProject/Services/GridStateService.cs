@@ -15,14 +15,9 @@ public class GridStateService : HandyGridStateAbstract<HandyGridEntity, TestClas
     public GridStateService(List<HandyGridEntity> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile) : base(Items, ReadonlyColumns, ExampleFileUploadUrl, OnSubmitFile)
     {
         this.Items = Items;
-        this.OnSubmitFile = async (results) => {
-            // Console.WriteLine("on submit file!");
-            // triggers a re-render in memory
-            this.Items.AddRange(results);
-        };
-
-        this.ReadonlyColumns = [nameof(TestClass.Id)];
-        this.ExampleFileUploadUrl = "templates/example.csv";
+        this.OnSubmitFile = OnSubmitFile;
+        this.ReadonlyColumns = ReadonlyColumns;
+        this.ExampleFileUploadUrl = ExampleFileUploadUrl;
     }
 
     public override GridValidationResponse ValidationChecks(HandyGridEntity item, List<string> columns)
