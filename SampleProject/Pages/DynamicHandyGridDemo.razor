@@ -79,20 +79,19 @@
             ReadonlyColumns: [nameof(TestClass.Id)],
             ExampleFileUploadUrl: "templates/example.csv",
             OnSubmitFile: async (results) => {
-                // Console.WriteLine("on submit file!");
+                 Console.WriteLine("on submit file!");
                 // triggers a re-render in memory
                 
+            },
+            EditModeFragments: new()
+            {
+                {
+                "Descriptions",
+                o => @<MultiSelectCheckBoxList TItem="TestClass" Items="states.ToList()" SelectedItems="o.Object.Descriptions"
+                    Placeholder="Select States" />
+                }
             }
         );
-
-        handyGridState.SetEditModeFragments(new()
-        {
-            {
-            "Descriptions",
-            o => @<MultiSelectCheckBoxList TItem="TestClass" Items="states.ToList()" SelectedItems="o.Object.Descriptions"
-                Placeholder="Select States" />
-            }
-        });
         
         doneLoadingLst = true;
     }

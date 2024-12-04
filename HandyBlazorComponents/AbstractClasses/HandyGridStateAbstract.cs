@@ -26,11 +26,13 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
     public EventCallback<IEnumerable<T>> SubmitFileAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnSubmitFile);
     public Func<IEnumerable<T>, Task> OnSubmitFile;
 
-    public HandyGridStateAbstract(List<T> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<T>, Task> OnSubmitFile)
+    public HandyGridStateAbstract(List<T> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<T>, Task> OnSubmitFile, Dictionary<string, RenderFragment<T>>? ViewModeFragments, Dictionary<string, RenderFragment<T>>? EditModeFragments)
     {
         this.ReadonlyColumns = ReadonlyColumns;
         this.ExampleFileUploadUrl = ExampleFileUploadUrl;
         this.OnSubmitFile = OnSubmitFile;
         this.Items = Items;
+        this.EditModeFragments = EditModeFragments;
+        this.ViewModeFragments = ViewModeFragments;
     }
 }
