@@ -12,12 +12,14 @@ using static HandyBlazorComponents.Models.ServiceResponses;
 
 public class GridStateService : HandyGridStateAbstract<HandyGridEntity, TestClass>
 {
-    public GridStateService(List<HandyGridEntity> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile) : base(Items, ReadonlyColumns, ExampleFileUploadUrl, OnSubmitFile)
+    public GridStateService(List<HandyGridEntity> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile, Dictionary<string, RenderFragment<HandyGridEntity>>? ViewModeFragments, Dictionary<string, RenderFragment<HandyGridEntity>>? EditModeFragments) : base(Items, ReadonlyColumns, ExampleFileUploadUrl, OnSubmitFile, ViewModeFragments, EditModeFragments)
     {
         this.Items = Items;
         this.OnSubmitFile = OnSubmitFile;
         this.ReadonlyColumns = ReadonlyColumns;
         this.ExampleFileUploadUrl = ExampleFileUploadUrl;
+        this.ViewModeFragments = ViewModeFragments;
+        this.EditModeFragments = EditModeFragments;
     }
 
     public override GridValidationResponse ValidationChecks(HandyGridEntity item, List<string> columns)
