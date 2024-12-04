@@ -1,6 +1,7 @@
 global using CsvHelper.Configuration;
 using Client.Models;
 using Client.Services;
+using HandyBlazorComponents.Abstracts;
 using HandyBlazorComponents.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -16,7 +17,7 @@ the commands above will tell you which of your nuget packages need to be updated
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-builder.Services.AddSingleton<IHandyGridState<HandyGridEntity, TestClass>, GridStateService>();
+// builder.Services.AddSingleton<HandyGridStateAbstract<HandyGridEntity, TestClass>, GridStateService>();
 
 
 

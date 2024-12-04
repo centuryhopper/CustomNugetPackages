@@ -4,14 +4,28 @@ namespace Client.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using Client.Models;
-using HandyBlazorComponents.Interfaces;
+using HandyBlazorComponents.Abstracts;
 using Microsoft.AspNetCore.Components;
 using static HandyBlazorComponents.Models.ServiceResponses;
 
-public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
+public class GridStateService : HandyGridStateAbstract<HandyGridEntity, TestClass>
 {
-    public GridValidationResponse ValidationChecks(HandyGridEntity item, List<string> columns)
+    public GridStateService(List<HandyGridEntity> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile) : base(Items, ReadonlyColumns, ExampleFileUploadUrl, OnSubmitFile)
+    {
+        this.Items = Items;
+        this.OnSubmitFile = async (results) => {
+            // Console.WriteLine("on submit file!");
+            // triggers a re-render in memory
+            this.Items.AddRange(results);
+        };
+
+        this.ReadonlyColumns = [nameof(TestClass.Id)];
+        this.ExampleFileUploadUrl = "templates/example.csv";
+    }
+
+    public override GridValidationResponse ValidationChecks(HandyGridEntity item, List<string> columns)
     {
         Dictionary<int, List<string>> errorMessagesDict = new();
 
@@ -43,6 +57,7 @@ public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
                 errorMessagesDict.Add(descriptionIndex, [$"Please fill out {nameof(item.Object.Description)}"]);
             }
         }
+
         if (!item.Object.Descriptions.Any())
         {
             if (errorMessagesDict.ContainsKey(descriptionsIndex))
@@ -66,6 +81,7 @@ public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
                 errorMessagesDict.Add(titleIndex, ["Please make sure all fields are under 256 characters"]);
             }
         }
+
         if (!string.IsNullOrWhiteSpace(item.Object.Description) && item.Object.Description?.Length > 256)
         {
             if (errorMessagesDict.ContainsKey(descriptionIndex))
@@ -87,13 +103,5 @@ public class GridStateService : IHandyGridState<HandyGridEntity, TestClass>
 
         return new GridValidationResponse(Flag: true, null);
     }
-    public List<HandyGridEntity> Items { get; set; }
-    public Dictionary<string, RenderFragment<HandyGridEntity>> EditModeFragments { get; set; }
-    public Dictionary<string, RenderFragment<HandyGridEntity>> ViewModeFragments { get; set; }
-    public IReadOnlyCollection<string> ReadonlyColumns { get; set; } = [nameof(TestClass.Id)];
-    public string ExampleFileUploadUrl { get; set; } = "templates/example.csv";
-    public Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile {get;set;}
-
-
 }
 

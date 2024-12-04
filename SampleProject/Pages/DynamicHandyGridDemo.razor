@@ -1,6 +1,7 @@
 @page "/dynamichandygrid-demo"
 @using Client.Models
-@inject IHandyGridState<HandyGridEntity, TestClass> handyGridState
+@using Client.Services
+@using HandyBlazorComponents.Abstracts
 
 
 <div class="m-5">
@@ -9,7 +10,7 @@
     @if (doneLoadingLst)
     {
         <CascadingValue Name="HandyGridState" Value="handyGridState" IsFixed="true">
-            <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" TMapper="TestClassMapper" Entity="HandyGridEntity"
+            <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" TMapper="TestClassMapper" HandyGridEntity="HandyGridEntity"
                 OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" />
         </CascadingValue>
     }
@@ -30,65 +31,65 @@
 
     private string[] states =
     {
-"Alabama", "Alaska", "American Samoa", "Arizona",
-"Arkansas", "California", "Colorado", "Connecticut",
-"Delaware", "District of Columbia", "Federated States of Micronesia",
-"Florida", "Georgia", "Guam", "Hawaii", "Idaho",
-"Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
-"Louisiana", "Maine", "Marshall Islands", "Maryland",
-"Massachusetts", "Michigan", "Minnesota", "Mississippi",
-"Missouri", "Montana", "Nebraska", "Nevada",
-"New Hampshire", "New Jersey", "New Mexico", "New York",
-"North Carolina", "North Dakota", "Northern Mariana Islands", "Ohio",
-"Oklahoma", "Oregon", "Palau", "Pennsylvania", "Puerto Rico",
-"Rhode Island", "South Carolina", "South Dakota", "Tennessee",
-"Texas", "Utah", "Vermont", "Virgin Island", "Virginia",
-"Washington", "West Virginia", "Wisconsin", "Wyoming",
-};
+        "Alabama", "Alaska", "American Samoa", "Arizona",
+        "Arkansas", "California", "Colorado", "Connecticut",
+        "Delaware", "District of Columbia", "Federated States of Micronesia",
+        "Florida", "Georgia", "Guam", "Hawaii", "Idaho",
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Marshall Islands", "Maryland",
+        "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+        "Missouri", "Montana", "Nebraska", "Nevada",
+        "New Hampshire", "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Northern Mariana Islands", "Ohio",
+        "Oklahoma", "Oregon", "Palau", "Pennsylvania", "Puerto Rico",
+        "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
+        "Texas", "Utah", "Vermont", "Virgin Island", "Virginia",
+        "Washington", "West Virginia", "Wisconsin", "Wyoming",
+    };
 
     private List<TestClass> TestLst = [
+        new TestClass { Id=1, Title = "Title01", Description = "Description01", Descriptions = ["Texas","Utah","Vermont"],},
+        new TestClass { Id=2, Title = "Title02", Description = "Description02", Descriptions = [],},
 
-    new TestClass { Id=1, Title = "Title01", Description = "Description01", Descriptions = ["Texas","Utah","Vermont"],},
-new TestClass { Id=2, Title = "Title02", Description = "Description02", Descriptions = [],},
+        new TestClass { Id=3, Title = "Title03", Description = "Description03", Descriptions = [],},
+        new TestClass { Id=4, Title = "Title04", Description = "Description04", Descriptions = [],},
 
-new TestClass { Id=3, Title = "Title03", Description = "Description03", Descriptions = [],},
-new TestClass { Id=4, Title = "Title04", Description = "Description04", Descriptions = [],},
+        new TestClass { Id=5, Title = "Title05", Description = "Description05", Descriptions = [],},
+        new TestClass { Id=6, Title = "Title06", Description = "Description06", Descriptions = [],},
 
-new TestClass { Id=5, Title = "Title05", Description = "Description05", Descriptions = [],},
-new TestClass { Id=6, Title = "Title06", Description = "Description06", Descriptions = [],},
-
-new TestClass { Id=7, Title = "Title07", Description = "Description07", Descriptions = [],},
-new TestClass { Id=8, Title = "Title08", Description = "Description08", Descriptions = [],},
-// new TestClass { Id=9, Title = "Title09", Description = "Description09",},
-// new TestClass { Id=10, Title = "Title10", Description = "Description10",},
-];
+        new TestClass { Id=7, Title = "Title07", Description = "Description07", Descriptions = [],},
+        new TestClass { Id=8, Title = "Title08", Description = "Description08", Descriptions = [],},
+        // new TestClass { Id=9, Title = "Title09", Description = "Description09",},
+        // new TestClass { Id=10, Title = "Title10", Description = "Description10",},
+    ];
 
     private bool doneLoadingLst = false;
     private DynamicHandyGrid<TestClass, HandyGridEntity, TestClassMapper> dynamicHandyGrid = default!;
     private ConfirmModal confirmModal = default!;
 
+    private GridStateService handyGridState;
+
     protected override void OnInitialized()
     {
-        handyGridState.Items = TestLst
-        .Select(item => new HandyGridEntity(Object: item))
-        .OrderBy(item => item.Object.Id)
-        .ToList();
+        handyGridState = new(
+            Items: TestLst
+            .Select(item => new HandyGridEntity(Object: item))
+            .OrderBy(item => item.Object.Id)
+            .ToList(),
+            ReadonlyColumns: [],
+            ExampleFileUploadUrl: "",
+            OnSubmitFile: async (results) => {}
+        );
 
-        handyGridState.EditModeFragments = new()
+        handyGridState.SetEditModeFragments(new()
         {
             {
             "Descriptions",
             o => @<MultiSelectCheckBoxList TItem="TestClass" Items="states.ToList()" SelectedItems="o.Object.Descriptions"
                 Placeholder="Select States" />
             }
-        };
-
-        handyGridState.OnSubmitFile = async (results) => {
-            Console.WriteLine("on submit file!");
-            // triggers a re-render in memory
-            handyGridState.Items.AddRange([]);
-        };
-
+        });
+        
         doneLoadingLst = true;
     }
 
