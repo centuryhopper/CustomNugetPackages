@@ -7,12 +7,13 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Client.Models;
 using HandyBlazorComponents.Abstracts;
+using HandyBlazorComponents.Models;
 using Microsoft.AspNetCore.Components;
 using static HandyBlazorComponents.Models.ServiceResponses;
 
 public class GridStateService : HandyGridStateAbstract<HandyGridEntity, TestClass>
 {
-    public GridStateService(List<HandyGridEntity> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile, Dictionary<string, RenderFragment<HandyGridEntity>>? ViewModeFragments, Dictionary<string, RenderFragment<HandyGridEntity>>? EditModeFragments) : base(Items, ReadonlyColumns, ExampleFileUploadUrl, OnSubmitFile, ViewModeFragments, EditModeFragments)
+    public GridStateService(List<HandyGridEntity> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile, List<NamedRenderFragment<HandyGridEntity>>? ViewModeFragments, List<NamedRenderFragment<HandyGridEntity>>? EditModeFragments) : base(Items, ReadonlyColumns, ExampleFileUploadUrl, OnSubmitFile, ViewModeFragments, EditModeFragments)
     {
         this.Items = Items;
         this.OnSubmitFile = OnSubmitFile;

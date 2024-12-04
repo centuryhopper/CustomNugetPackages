@@ -41,10 +41,11 @@
                                             @foreach (var (columnIdx, columnName) in Columns.Select((columnName, columnIdx) => (columnIdx, columnName)))
                                             {
                                                 <td>
-                                                    @if (HandyGridState.EditModeFragments != null && HandyGridState.EditModeFragments.TryGetValue(columnName, out var template))
+                                                    @if (HandyGridState.EditModeFragments != null && HandyGridState.EditModeFragments.FirstOrDefault(x=>x.Name == columnName) != null)
                                                     {
+                                                        var template = HandyGridState.EditModeFragments.First(x=>x.Name == columnName);
                                                         <div class="d-flex align-items-center p-3">
-                                                            @template(ItemsToAdd[rowIdx])
+                                                            @(template.Fragment(ItemsToAdd[rowIdx]))
                                                         </div>
                                                     }
                                                     else

@@ -2,7 +2,7 @@ global using CsvHelper.Configuration;
 using Client.Models;
 using Client.Services;
 using HandyBlazorComponents.Abstracts;
-using HandyBlazorComponents.Interfaces;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SampleProject;

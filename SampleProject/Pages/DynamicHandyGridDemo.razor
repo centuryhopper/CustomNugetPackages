@@ -83,14 +83,11 @@
                 // triggers a re-render in memory
                 
             },
-            EditModeFragments: new()
-            {
-                {
-                "Descriptions",
-                o => @<MultiSelectCheckBoxList TItem="TestClass" Items="states.ToList()" SelectedItems="o.Object.Descriptions"
-                    Placeholder="Select States" />
-                }
-            }
+            EditModeFragments: [
+                new NamedRenderFragment<HandyGridEntity>(Name: "Descriptions", Fragment: o => @<MultiSelectCheckBoxList TItem="TestClass" Items="states.ToList()" SelectedItems="o.Object.Descriptions"
+                    Placeholder="Select States" />)
+            ],
+            ViewModeFragments: null
         );
         
         doneLoadingLst = true;

@@ -1,6 +1,6 @@
 @typeparam TItem where TItem : class, new()
 @typeparam HandyGridEntity where HandyGridEntity : HandyGridEntityAbstract<TItem>, new()
-@typeparam TMapper where TMapper : ClassMap
+@* @typeparam TMapper where TMapper : ClassMap *@
 @using System.Linq.Expressions
 
 
@@ -55,7 +55,8 @@
                             <button @onclick="@(() => BeginEdit(rowIdx))" class="btn btn-primary">Edit</button>
                         }
                     </td>
-                    @foreach (var (columnIdx, columnName) in HandyGridState.Columns.Select((columnName, columnIdx) => (columnIdx,
+                    @foreach (var (columnIdx, columnName) in HandyGridState.Columns.Select((columnName, columnIdx) =>
+                   (columnIdx,
                    columnName)))
                     {
                         <td>
@@ -63,10 +64,11 @@
                             @if (!HandyGridState.ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
                             {
                                 @if (HandyGridState.EditModeFragments != null &&
-                               HandyGridState.EditModeFragments.TryGetValue(columnName, out var template))
+                               HandyGridState.EditModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
                                 {
+                                    var template = HandyGridState.EditModeFragments.First(x => x.Name == columnName);
                                     <div class="d-flex align-items-center p-3">
-                                        @template(pagedItemsHelper[rowIdx])
+                                        @(template.Fragment(pagedItemsHelper[rowIdx]))
                                     </div>
                                 }
                                 else
@@ -82,9 +84,10 @@
                             else
                             {
                                 @if (HandyGridState.ViewModeFragments != null &&
-                               HandyGridState.ViewModeFragments.TryGetValue(columnName, out var template))
+                               HandyGridState.ViewModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
                                 {
-                                    @template(pagedItemsHelper[rowIdx])
+                                    var template = HandyGridState.ViewModeFragments.First(x => x.Name == columnName);
+                                    @(template.Fragment(pagedItemsHelper[rowIdx]))
                                 }
                                 else
                                 {
@@ -125,7 +128,7 @@
 
 <NotificationModal @ref="notificationModal" />
 
-<UploadComponent TItem="TItem" TMapper="TMapper" HandyGridEntity="HandyGridEntity" />
+@* <UploadComponent TItem="TItem" TMapper="TMapper" HandyGridEntity="HandyGridEntity" /> *@
 
 @code {
     private ConfirmModal confirmModal = default!;
@@ -238,7 +241,7 @@
             var param = Expression.Parameter(typeof(HandyGridEntity), "entity");
 
             // Navigate to the TItem property of HandyGridEntity
-            var tItemProperty = Expression.PropertyOrField(param, "obj"); // Replace 'TItem' with the actual property name of HandyGridEntity
+            var tItemProperty = Expression.PropertyOrField(param, "obj"); // Replace 'TItem' with the actual property name of
 
             // Access the target property or field on TItem
             var property = Expression.PropertyOrField(tItemProperty, sortColumn);
@@ -267,7 +270,8 @@
 
         pagedItems = itemsQuery.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
         //pagedItemsHelper = DeepCopy(pagedItems);
-        pagedItemsHelper = pagedItems.Select(item => {
+        pagedItemsHelper = pagedItems.Select(item =>
+        {
             HandyGridEntity entity = new HandyGridEntity();
             entity.Object = item.DeepCopy();
             return entity;

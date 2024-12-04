@@ -1,6 +1,6 @@
 
 using HandyBlazorComponents.Abstracts;
-using HandyBlazorComponents.Interfaces;
+
 
 namespace Client.Models;
 
@@ -41,7 +41,7 @@ public class HandyGridEntity : HandyGridEntityAbstract<TestClass>
     {
         Object.Id = id;
     }
-    
+
     public override void ParsePropertiesFromCSV(Dictionary<string, object> properties)
     {
         base.ParsePropertiesFromCSV(properties);
