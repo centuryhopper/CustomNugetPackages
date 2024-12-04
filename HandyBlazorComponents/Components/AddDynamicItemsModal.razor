@@ -94,7 +94,7 @@
     public string Title { get; set; } = "Items To Add";
 
     [CascadingParameter(Name = nameof(HandyGridState))]
-    public IHandyGridState<HandyGridEntity, TItem> HandyGridState { get; set; }
+    public HandyGridStateAbstract<HandyGridEntity, TItem> HandyGridState { get; set; }
 
     private string[,] _errorMessages;
 
