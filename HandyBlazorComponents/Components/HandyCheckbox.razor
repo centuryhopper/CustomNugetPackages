@@ -1,0 +1,45 @@
+@typeparam TItem where TItem : class, new()
+
+<div class="form-check">
+    <input type="checkbox" class="form-check-input"
+           checked="@(GetPropertyValue(Item, ColumnName) as bool? ?? false)"
+           @onchange="OnCheckboxChange" />
+    <label class="form-check-label">@Label</label>
+</div>
+
+@code {
+    [Parameter]
+    public TItem Item { get; set; } = null!; // The object being edited
+
+    [Parameter]
+    public string ColumnName { get; set; } = null!; // The name of the property to bind to
+
+    [Parameter]
+    public string Label { get; set; } = ""; // Label for the checkbox
+
+    private object? GetPropertyValue(TItem item, string propertyName)
+    {
+        return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+    }
+
+    private void SetPropertyValue(TItem item, object? value, string propertyName)
+    {
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property != null && property.CanWrite)
+        {
+            property.SetValue(item, Convert.ToBoolean(value));
+        }
+    }
+
+    private void OnCheckboxChange(ChangeEventArgs e)
+    {
+        if (e.Value is bool boolValue)
+        {
+            SetPropertyValue(Item, boolValue, ColumnName);
+        }
+        else if (bool.TryParse(e.Value?.ToString(), out bool parsedBool))
+        {
+            SetPropertyValue(Item, parsedBool, ColumnName);
+        }
+    }
+}

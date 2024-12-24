@@ -1,5 +1,5 @@
 @typeparam TItem where TItem : class, new()
-@typeparam HandyGridEntity where HandyGridEntity : HandyGridEntityAbstract<TItem>, new()
+@typeparam TEntity where TEntity : HandyGridEntityAbstract<TItem>, new()
 
 @if (isVisible)
 {
@@ -88,14 +88,14 @@
 
 @code {
     private bool isVisible = false;
-    private TaskCompletionSource<List<HandyGridEntity>> taskCompletionSource = default!;
-    private List<HandyGridEntity> ItemsToAdd {get;set;} = new();
+    private TaskCompletionSource<List<TEntity>> taskCompletionSource = default!;
+    private List<TEntity> ItemsToAdd {get;set;} = new();
  
     [Parameter]
     public string Title { get; set; } = "Items To Add";
 
     [CascadingParameter(Name = nameof(HandyGridState))]
-    public HandyGridStateAbstract<HandyGridEntity, TItem> HandyGridState { get; set; }
+    public HandyGridStateAbstract<TEntity, TItem> HandyGridState { get; set; }
 
     private string[,] _errorMessages;
 
@@ -124,7 +124,7 @@
 
     private void AddItem()
     {
-        HandyGridEntity item = new();
+        TEntity item = new();
         ItemsToAdd.Add(item);
     }
 
@@ -143,15 +143,15 @@
     //    }
     //}
 
-    private void RemoveItem(HandyGridEntity entity)
+    private void RemoveItem(TEntity entity)
     {
         ItemsToAdd.Remove(entity);
     }
 
-    public Task<List<HandyGridEntity>> ShowAsync()
+    public Task<List<TEntity>> ShowAsync()
     {
         isVisible = true;
-        taskCompletionSource = new TaskCompletionSource<List<HandyGridEntity>>();
+        taskCompletionSource = new TaskCompletionSource<List<TEntity>>();
         StateHasChanged();
         return taskCompletionSource.Task;
     }

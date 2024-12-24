@@ -1,12 +1,52 @@
 @using Microsoft.AspNetCore.Components
  
-<div class="pagination-controls" style="display: flex; justify-content: flex-end; margin-top: 10px; margin-right: 10px;">
-    <button @onclick="GoToFirstPage" disabled="@IsFirstPage" style="width: 5rem;">First</button>
-    <button @onclick="PrevPage" disabled="@IsFirstPage" style="width: 5rem;">Previous</button>
-    <span class="m-3">Page @CurrentPage of @TotalPages</span>
-    <button @onclick="NextPage" disabled="@IsLastPage" style="width: 5rem;">Next</button>
-    <button @onclick="GoToLastPage" disabled="@IsLastPage" style="width: 5rem;">Last</button>
+<div class="container">
+    @if (TotalPages > 0)
+    {
+        <div class="d-flex flex-row-reverse">
+            <p>Page Number</p>
+        </div>
+        <ul class="pagination justify-content-end">
+            @{
+                var firstPageDisabled = (CurrentPage > 1 ? "" : "disabled");
+                var firstPageColored = (CurrentPage > 1 ? "color: blue;" : "");
+            }
+            <li class="@($"page-item {firstPageDisabled}")">
+                <a class="page-link" @onclick="GoToFirstPage" disabled="@IsFirstPage">First</a>
+            </li>
+            <li class="@($"page-item {firstPageDisabled}")">
+                <a class="page-link" @onclick="PrevPage" disabled="@IsFirstPage" style="@firstPageColored">Previous</a>
+            </li>
+            @for (int pge = StartPage; pge <= EndPage; pge++)
+            {
+                @* must use a temporary variable to make this work *@
+                int cur = pge;
+                <li class="page-item @(cur == CurrentPage ? "active" : "")">
+                    <a class="page-link" @onclick="@(() => GoToPage(cur))">@pge</a>
+                </li>
+            }
+
+            @{
+                var lastPageDisabled = (CurrentPage < TotalPages ? "" : "disabled");
+                var lastPageColored = (CurrentPage < TotalPages ? "color: blue;" : "");
+            }
+            <li class="@($"page-item {lastPageDisabled}")">
+                <a class="page-link" @onclick="NextPage" disabled="@IsLastPage" style="@lastPageColored">Next</a>
+            </li>
+            <li class="@($"page-item {lastPageDisabled}")">
+                <a class="page-link" @onclick="GoToLastPage" disabled="@IsLastPage" style="@lastPageColored">Last</a>
+            </li>
+        </ul>
+    }
 </div>
+
+
+
+
+
+
+
+
  
 @code {
     [Parameter] public int CurrentPage { get; set; }
@@ -15,6 +55,34 @@
  
     private bool IsFirstPage => CurrentPage == 1;
     private bool IsLastPage => CurrentPage == TotalPages;
+
+    private int StartPage { get; set; }
+    private int EndPage { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // limit the range of pagination
+        int startPage = CurrentPage - 5;
+        int endPage = CurrentPage + 4;
+        if (startPage <= 0)
+        {
+            startPage = 1;
+            //endPage = endPage - (startPage - 1);
+        }
+
+        if (endPage > TotalPages)
+        {
+            endPage = TotalPages;
+            if (endPage > 10)
+            {
+                startPage = endPage - 9;
+            }
+        }
+
+        StartPage = startPage;
+        EndPage = endPage;
+        
+    }
  
     private void GoToFirstPage()
     {
@@ -26,6 +94,13 @@
     {
         CurrentPage = TotalPages;
         OnPageChanged.InvokeAsync(CurrentPage);
+    }
+
+    private void GoToPage(int pageNumber)
+    {
+        CurrentPage = pageNumber;
+        OnPageChanged.InvokeAsync(pageNumber);
+        //Console.WriteLine(CurrentPage);
     }
  
     private void PrevPage()

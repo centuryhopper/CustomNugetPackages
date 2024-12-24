@@ -1,0 +1,47 @@
+@typeparam TItem where TItem : class, new()
+
+<textarea 
+class="form-control"
+style="@Style"
+placeholder="@Placeholder"
+@oninput="e => SetPropertyValue(Item, e.Value?.ToString(), ColumnName)">
+    @GetPropertyValue(Item, ColumnName)
+</textarea >
+
+@* <div>helllo</div> *@
+
+@code {
+
+    [Parameter]
+    public TItem Item {get;set;}
+
+    [Parameter]
+    public string Style {get;set;} = "width: 10rem";
+
+    [Parameter]
+    public string ColumnName {get;set;} = null!;
+    public string Placeholder {get;set;} = null!;
+    private bool IsTextVisible = false;
+
+    protected override void OnInitialized()
+    {
+        Placeholder = $"Enter {ColumnName}";
+    }
+
+
+    private object? GetPropertyValue(TItem item, string propertyName)
+    {
+        //Console.WriteLine(item);
+        return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+    }
+
+    private void SetPropertyValue(TItem item, object? value, string propertyName)
+    {
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property != null && property.CanWrite && value != null)
+        {
+            property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
+        }
+    }
+
+}

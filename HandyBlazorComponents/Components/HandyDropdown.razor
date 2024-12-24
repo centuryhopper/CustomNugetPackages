@@ -1,0 +1,44 @@
+@typeparam TItem where TItem : class, new()
+
+<select 
+    class="form-control"
+    style="@Style"
+    value="@GetPropertyValue(Item, ColumnName)"
+    @onchange="e => SetPropertyValue(Item, e.Value?.ToString(), ColumnName)">
+    @* <option value="">Select @Placeholder</option> *@
+    @foreach (var option in Options)
+    {
+        <option value="@option">@option</option>
+    }
+</select>
+
+@code {
+
+    [Parameter]
+    public TItem Item { get; set; }
+
+    [Parameter]
+    public string Style { get; set; } = "width: 10rem";
+
+    [Parameter]
+    public string ColumnName { get; set; } = null!;
+
+    [Parameter]
+    public List<string> Options { get; set; } = [];
+
+    private string? SelectedValue { get; set; }
+
+    private object? GetPropertyValue(TItem item, string propertyName)
+    {
+        return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+    }
+
+    private void SetPropertyValue(TItem item, object? value, string propertyName)
+    {
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property != null && property.CanWrite && value != null)
+        {
+            property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
+        }
+    }
+}

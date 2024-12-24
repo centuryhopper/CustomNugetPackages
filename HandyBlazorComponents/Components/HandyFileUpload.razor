@@ -1,0 +1,59 @@
+@typeparam TItem where TItem : class, new()
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+
+<InputFile 
+    style="@Style"
+    OnChange="HandleFileChange"
+    accept="@Accept"
+    />
+
+@* <div>
+    File Uploaded: @(GetPropertyValue(Item, ColumnName) != null ? "Yes" : "No")
+</div> *@
+
+@code {
+    [Parameter]
+    public string Accept {get;set;} = "";
+
+    [Parameter]
+    public TItem Item { get; set; } = default!;
+
+    [Parameter]
+    public string Style { get; set; } = "width: 10rem";
+
+    [Parameter]
+    public string ColumnName { get; set; } = null!;
+
+    private async Task HandleFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = new MemoryStream();
+            await file.OpenReadStream().CopyToAsync(stream);
+            var fileBytes = stream.ToArray();
+
+            // Set the byte array to the specified property in TItem
+            SetPropertyValue(Item, fileBytes, ColumnName);
+        }
+        else
+        {
+            SetPropertyValue(Item, null, ColumnName);
+        }
+    }
+
+    private object? GetPropertyValue(TItem item, string propertyName)
+    {
+        return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
+    }
+
+    private void SetPropertyValue(TItem item, object? value, string propertyName)
+    {
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property != null && property.CanWrite)
+        {
+            property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
+        }
+    }
+}

@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 @typeparam TItem where TItem : class, new()
-@typeparam HandyGridEntity where HandyGridEntity : HandyGridEntityAbstract<TItem>, new()
+@typeparam TEntity where TEntity : HandyGridEntityAbstract<TItem>, new()
 @typeparam TMapper where TMapper : ClassMap
 
 <div class="m-3 p-3" style="overflow-y: scroll; height: 30rem;">
@@ -32,7 +32,7 @@
 @code {
 
     [CascadingParameter(Name = nameof(HandyGridState))]
-    public HandyGridStateAbstract<HandyGridEntity, TItem> HandyGridState { get; set; }
+    public HandyGridStateAbstract<TEntity, TItem> HandyGridState { get; set; }
     private NotificationModal notificationModal { get; set; }
 
     private IBrowserFile selectedFile;
@@ -62,7 +62,7 @@
         }
 
         loading = true;
-        List<HandyGridEntity> results = new();
+        List<TEntity> results = new();
 
         try
         {
@@ -86,7 +86,7 @@
             // Asynchronously enumerate through CSV records and add to results list
             await foreach (var record in csvReader.GetRecordsAsync<TItem>())
             {
-                HandyGridEntity entity = new();
+                TEntity entity = new();
                 entity.Object = record;
                 results.Add(entity);
             }

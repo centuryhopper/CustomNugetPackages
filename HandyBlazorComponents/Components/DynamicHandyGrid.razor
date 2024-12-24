@@ -1,13 +1,16 @@
 @typeparam TItem where TItem : class, new()
-@typeparam HandyGridEntity where HandyGridEntity : HandyGridEntityAbstract<TItem>, new()
-@* @typeparam TMapper where TMapper : ClassMap *@
+@typeparam TEntity where TEntity : HandyGridEntityAbstract<TItem>, new()
 @using System.Linq.Expressions
+@using HandyBlazorComponents.Abstracts
+@using HandyBlazorComponents.Components
 
 
 @* This grid has pagination and filtering and sorting along with all CRUD operations *@
 @* It is recommended to use only primitive types and certain reference types for the columns
     Usable reference types include only strings and ienumerables of either a string or primitive type
     Other reference types have not been tested and it is recommended to convert them into strings when used
+
+    dotnet pack && dotnet nuget push bin/Release/HandyBlazorComponents.1.0.72.nupkg -s nuget.org -k [insert_api_key]
  *@
 
 <div class="text-center overflow-auto m-3">
@@ -17,21 +20,30 @@
                 <th>
                     Row #
                 </th>
-                <th>
-                    Actions
-                </th>
-                @foreach (var column in HandyGridState.Columns)
+                @if (!HandyGridState.IsReadonly)
                 {
                     <th>
-                        <button @onclick="@(() => SortData(column))" class="btn btn-primary">
-                            @column @GetSortIcon(column)
-                        </button>
-                        <TextInputFilter Value="@GetFilterValue(column)"
-                            ValueChanged="@(value => SetFilterValue(column, value))" PlaceHolder=@($"Filter by {column}") />
+                        Actions
                     </th>
                 }
-                <th>UPDATE</th>
-                <th>DELETE</th>
+                @foreach (var column in HandyGridState.Columns)
+                {
+                    if (!HandyGridState.ColumnsToHide.Contains(column))
+                    {
+                        <th>
+                            <button @onclick="@(() => SortData(column))" class="btn btn-primary">
+                                @column @GetSortIcon(column)
+                            </button>
+                            <TextInputFilter Value="@GetFilterValue(column)"
+                                ValueChanged="@(value => SetFilterValue(column, value))" PlaceHolder=@($"Filter by {column}") />
+                        </th>
+                    }
+                }
+                @if (!HandyGridState.IsReadonly)
+                {
+                    <th>UPDATE</th>
+                    <th>DELETE</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -44,70 +56,79 @@
                             @rowIdx
                         </div>
                     </td>
-                    <td>
-                        @if (AllowEdits[rowIdx])
-                        {
-                            <button @onclick="@(() => CancelEdit(rowIdx, pagedItemsHelper[rowIdx]))"
-                                class="btn btn-primary">Cancel</button>
-                        }
-                        else
-                        {
-                            <button @onclick="@(() => BeginEdit(rowIdx))" class="btn btn-primary">Edit</button>
-                        }
-                    </td>
+                    @if (!HandyGridState.IsReadonly)
+                    {
+                        <td>
+                            @if (AllowEdits[rowIdx])
+                            {
+                                <button @onclick="@(() => CancelEdit(rowIdx, pagedItemsHelper[rowIdx]))"
+                                    class="btn btn-primary">Cancel</button>
+                            }
+                            else
+                            {
+                                <button @onclick="@(() => BeginEdit(rowIdx))" class="btn btn-primary">Edit</button>
+                            }
+                        </td>
+                    }
                     @foreach (var (columnIdx, columnName) in HandyGridState.Columns.Select((columnName, columnIdx) =>
                    (columnIdx,
                    columnName)))
                     {
-                        <td>
-                            @* edit mode cases *@
-                            @if (!HandyGridState.ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
-                            {
-                                @if (HandyGridState.EditModeFragments != null &&
-                               HandyGridState.EditModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
+                        if (!HandyGridState.ColumnsToHide.Contains(columnName))
+                        {
+                            <td>
+                                @* edit mode cases *@
+                                @if (!HandyGridState.ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
                                 {
-                                    var template = HandyGridState.EditModeFragments.First(x => x.Name == columnName);
-                                    <div class="d-flex align-items-center p-3">
+                                    @if (HandyGridState.EditModeFragments != null &&
+                                HandyGridState.EditModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
+                                    {
+                                        var template = HandyGridState.EditModeFragments.First(x => x.Name == columnName);
+                                        <div class="d-flex align-items-center p-3">
+                                            @(template.Fragment(pagedItemsHelper[rowIdx]))
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex align-items-center p-3">
+                                            <input value="@(pagedItemsHelper[rowIdx].DisplayPropertyInGrid(columnName))"
+                                                @oninput="(e) => pagedItemsHelper[rowIdx].SetPropertyValue(columnName, e.Value)"
+                                                class="form-control" style="width: 10rem" />
+                                        </div>
+                                    }
+                                }
+                                @* view mode cases *@
+                                else
+                                {
+                                    @if (HandyGridState.ViewModeFragments != null &&
+                                HandyGridState.ViewModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
+                                    {
+                                        var template = HandyGridState.ViewModeFragments.First(x => x.Name == columnName);
                                         @(template.Fragment(pagedItemsHelper[rowIdx]))
-                                    </div>
+                                    }
+                                    else
+                                    {
+                                        @* <span>@GetPropertyValue(pagedItemsHelper[rowIdx], columnName)</span> *@
+                                        <span>@(pagedItemsHelper[rowIdx].DisplayPropertyInGrid(columnName))</span>
+                                    }
                                 }
-                                else
-                                {
-                                    <div class="d-flex align-items-center p-3">
-                                        <input value="@(pagedItemsHelper[rowIdx].DisplayPropertyInGrid(columnName))"
-                                            @oninput="(e) => pagedItemsHelper[rowIdx].SetPropertyValue(columnName, e.Value)"
-                                            class="form-control" style="width: 10rem" />
-                                    </div>
-                                }
-                            }
-                            @* view mode cases *@
-                            else
-                            {
-                                @if (HandyGridState.ViewModeFragments != null &&
-                               HandyGridState.ViewModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
-                                {
-                                    var template = HandyGridState.ViewModeFragments.First(x => x.Name == columnName);
-                                    @(template.Fragment(pagedItemsHelper[rowIdx]))
-                                }
-                                else
-                                {
-                                    @* <span>@GetPropertyValue(pagedItemsHelper[rowIdx], columnName)</span> *@
-                                    <span>@(pagedItemsHelper[rowIdx].DisplayPropertyInGrid(columnName))</span>
-                                }
-                            }
 
-                            <span class="text-danger">@ErrorMessages[rowIdx, columnIdx]</span>
+                                <span class="text-danger">@ErrorMessages[rowIdx, columnIdx]</span>
+                            </td>
+                        }
+                    }
+                    @if (!HandyGridState.IsReadonly)
+                    {
+                        <td>
+                            <button disabled="@(!AllowEdits[rowIdx])"
+                                @onclick="@(() => UpdateRow(rowIdx, pagedItemsHelper[rowIdx]))"
+                                class="btn btn-primary">Update</button>
+                        </td>
+                        <td>
+                            <button @onclick="@(() => DeleteRow(pagedItemsHelper[rowIdx]))"
+                                class="btn btn-danger">DELETE</button>
                         </td>
                     }
-                    <td>
-                        <button disabled="@(!AllowEdits[rowIdx])"
-                            @onclick="@(() => UpdateRow(rowIdx, pagedItemsHelper[rowIdx]))"
-                            class="btn btn-primary">Update</button>
-                    </td>
-                    <td>
-                        <button @onclick="@(() => DeleteRow(pagedItemsHelper[rowIdx]))"
-                            class="btn btn-danger">DELETE</button>
-                    </td>
                 </tr>
             }
         </tbody>
@@ -118,58 +139,61 @@
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 <CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="OnPageChanged" />
 
-<AddDynamicItemsModal TItem="TItem" HandyGridEntity="HandyGridEntity" @ref="AddDynamicItemsModal" />
+<AddDynamicItemsModal TItem="TItem" TEntity="TEntity" @ref="AddDynamicItemsModal"  />
 
 <button class="btn btn-primary" @onclick="AddNewItems">Add New Items</button>
 
-<div class="m-3">
-    <button class="btn btn-info" @onclick="ExportTableAsCsv">Export Table as CSV</button>
-</div>
+@if (HandyGridState.Exportable)
+{
+    <div class="m-3">
+        <button class="btn btn-info" @onclick="ExportTableAsCsv">Export Table as CSV</button>
+    </div>
+}
 
 <NotificationModal @ref="notificationModal" />
 
-@* <UploadComponent TItem="TItem" TMapper="TMapper" HandyGridEntity="HandyGridEntity" /> *@
 
 @code {
     private ConfirmModal confirmModal = default!;
     private NotificationModal notificationModal = default!;
-    private AddDynamicItemsModal<TItem, HandyGridEntity> AddDynamicItemsModal = default!;
+    private AddDynamicItemsModal<TItem, TEntity> AddDynamicItemsModal = default!;
 
     [CascadingParameter(Name = nameof(HandyGridState))]
-    public HandyGridStateAbstract<HandyGridEntity, TItem> HandyGridState { get; set; }
+    public HandyGridStateAbstract<TEntity, TItem> HandyGridState { get; set; }
 
-    [Parameter]
-    public EventCallback<IEnumerable<HandyGridEntity>> OnCreate { get; set; }
-    [Parameter]
-    public EventCallback<HandyGridEntity> OnUpdate { get; set; }
-    [Parameter]
-    public EventCallback<HandyGridEntity> OnDelete { get; set; }
+    //[Parameter]
+    //public EventCallback<IEnumerable<TEntity>> HandyGridState.OnCreate { get; set; }
+    //[Parameter]
+    //public EventCallback<TEntity> HandyGridState.OnUpdate { get; set; }
+    //[Parameter]
+    //public EventCallback<TEntity> HandyGridState.OnDelete { get; set; }
+    //[Parameter]
+    //public int PageSize {get;set;} = 5;
 
 
 
-    [Parameter]
-    public int CurrentPage { get; set; } = 1;
+    private int CurrentPage { get; set; } = 1;
 
-    private const int pageSize = 5; // Number of items per page
+    private int pageSize => HandyGridState.PageSize; // Number of items per page
     private int TotalPages => (int)Math.Ceiling((double)filteredItems.Count() / pageSize);
 
     private List<bool> AllowEdits = new();
     private Dictionary<string, string> FilterValues { get; set; } = new();
     //private List<string>? Columns { get; set; }
-    private IEnumerable<HandyGridEntity> filteredItems =>
+    private IEnumerable<TEntity> filteredItems =>
     HandyGridState.Items.Where(item => FilterQuery(item));
 
-    private List<HandyGridEntity> pagedItems = new();
+    private List<TEntity> pagedItems = new();
     /// <summary>
     /// A temp list in the dynamic handy grid so that the cancel function can be used to revert back the old values in the
     /// original grid.
     /// Used in case we want to revert a change.
     /// </summary>
     /// <returns></returns>
-    private List<HandyGridEntity> pagedItemsHelper = new();
+    private List<TEntity> pagedItemsHelper = new();
     private string sortColumn;
     private bool sortAscending = true;
-    private List<HandyGridEntity> ItemsToAdd = new();
+    private List<TEntity> ItemsToAdd = new();
 
     private string[,] _errorMessages;
 
@@ -191,7 +215,7 @@
     {
         ItemsToAdd = await AddDynamicItemsModal.ShowAsync();
         // ItemsToAdd.ForEach(item => Console.WriteLine(item));
-        int maxId = HandyGridState.Items.Max(o => o.GetPrimaryKey());
+        int maxId = HandyGridState.Items.Any() ? HandyGridState.Items.Max(o => o.GetPrimaryKey()) : -1;
         // Console.WriteLine("maxId: " + maxId);
         if (ItemsToAdd.Any())
         {
@@ -203,7 +227,7 @@
             HandyGridState.Items.AddRange(ItemsToAdd);
 
             // server call
-            await OnCreate.InvokeAsync(ItemsToAdd);
+            await HandyGridState.OnCreateAction.InvokeAsync(ItemsToAdd);
         }
     }
 
@@ -238,10 +262,10 @@
         // Apply sorting using reflection
         if (!string.IsNullOrWhiteSpace(sortColumn))
         {
-            var param = Expression.Parameter(typeof(HandyGridEntity), "entity");
+            var param = Expression.Parameter(typeof(TEntity), "entity");
 
-            // Navigate to the TItem property of HandyGridEntity
-            var tItemProperty = Expression.PropertyOrField(param, "obj"); // Replace 'TItem' with the actual property name of
+            // Navigate to the TItem property of TEntity
+            var tItemProperty = Expression.PropertyOrField(param, "Object"); // Replace 'TItem' with the actual property name of
 
             // Access the target property or field on TItem
             var property = Expression.PropertyOrField(tItemProperty, sortColumn);
@@ -262,7 +286,7 @@
             }
 
             // Create the lambda expression for sorting
-            var lambda = Expression.Lambda<Func<HandyGridEntity, object>>(sortExpression, param);
+            var lambda = Expression.Lambda<Func<TEntity, object>>(sortExpression, param);
 
             // Apply sorting
             itemsQuery = sortAscending ? itemsQuery.OrderBy(lambda) : itemsQuery.OrderByDescending(lambda);
@@ -272,7 +296,7 @@
         //pagedItemsHelper = DeepCopy(pagedItems);
         pagedItemsHelper = pagedItems.Select(item =>
         {
-            HandyGridEntity entity = new HandyGridEntity();
+            TEntity entity = new TEntity();
             entity.Object = item.DeepCopy();
             return entity;
         }).ToList();
@@ -282,7 +306,7 @@
         StateHasChanged();
     }
 
-    private bool FilterQuery(HandyGridEntity item)
+    private bool FilterQuery(TEntity item)
     {
         bool nullOrWhiteSpaceCheck = FilterValues.Values.All(
         filter => string.IsNullOrWhiteSpace(filter)
@@ -315,7 +339,7 @@
         // Columns.ForEach(c=>Console.WriteLine(c));
     }
 
-    private async Task UpdateRow(int rowIdx, HandyGridEntity item)
+    private async Task UpdateRow(int rowIdx, TEntity item)
     {
         // find out rows that have errors
         var validation = HandyGridState.ValidationChecks(item, HandyGridState.Columns);
@@ -361,6 +385,7 @@
                 {
                     // SetPropertyValue(Items[i], item, columnName);
                     props.Add(columnName, item.GetPropertyValue(columnName)!);
+                    //Console.WriteLine(item.GetPropertyValue(columnName));
                 }
 
                 HandyGridState.Items[i].SetProperties(props);
@@ -369,10 +394,13 @@
 
         //UpdatePagedItems();
 
-        await OnUpdate.InvokeAsync(item);
+        AllowEdits[rowIdx] = false;
+
+
+        await HandyGridState.OnUpdateAction.InvokeAsync(item);
     }
 
-    private async Task DeleteRow(HandyGridEntity entity)
+    private async Task DeleteRow(TEntity entity)
     {
         //Console.WriteLine(item.GetPrimaryKey());
         var response = await confirmModal.ShowAsync();
@@ -384,11 +412,11 @@
                 HandyGridState.Items.Remove(itemToRemove);
             }
             //Console.WriteLine(Items.Count);
-            await OnDelete.InvokeAsync(entity);
+            await HandyGridState.OnDeleteAction.InvokeAsync(entity);
         }
     }
 
-    private async Task CancelEdit(int rowIdx, HandyGridEntity entity)
+    private async Task CancelEdit(int rowIdx, TEntity entity)
     {
         // clear error messages
         for (var columnIdx = 0; columnIdx < ErrorMessages.GetLength(1); columnIdx++)

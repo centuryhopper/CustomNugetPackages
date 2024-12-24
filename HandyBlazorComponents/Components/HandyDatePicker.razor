@@ -1,0 +1,47 @@
+@typeparam TItem where TItem : class, new()
+
+<div class="input-group">
+    <input type="date" class="form-control" 
+           value="@(GetFormattedDate())"
+           @onchange="OnDateChange" />
+</div>
+
+@code {
+    [Parameter]
+    public TItem Item { get; set; } = null!; // The object being edited
+
+    [Parameter]
+    public string ColumnName { get; set; } = null!; // The name of the property to bind to
+
+    private void OnDateChange(ChangeEventArgs e)
+    {
+        if (e.Value is string stringValue && DateOnly.TryParse(stringValue, out DateOnly parsedDate))
+        {
+            SetPropertyValue(Item, parsedDate, ColumnName);
+        }
+    }
+
+    private DateOnly? GetPropertyValue(TItem item, string propertyName)
+    {
+        //Console.WriteLine(typeof(TItem).GetProperty(propertyName)?.GetValue(item));
+        return typeof(TItem).GetProperty(propertyName)?.GetValue(item) as DateOnly?;
+    }
+
+    /// <summary>
+    /// Fetches the property value and formats it as yyyy-MM-dd for the input field.
+    /// </summary>
+    private string GetFormattedDate()
+    {
+        var value = GetPropertyValue(Item, ColumnName);
+        return value.HasValue ? value.Value.ToString("yyyy-MM-dd") : string.Empty;
+    }
+
+    private void SetPropertyValue(TItem item, object? value, string propertyName)
+    {
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property != null && property.CanWrite)
+        {
+            property.SetValue(item, value);
+        }
+    }
+}

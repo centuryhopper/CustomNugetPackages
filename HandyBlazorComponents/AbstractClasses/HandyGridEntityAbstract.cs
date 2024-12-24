@@ -70,6 +70,26 @@ public abstract class HandyGridEntityAbstract<T> where T : class, new()
                         property.SetValue(item, null); // Set nullable DateTime to null if invalid
                     }
                 }
+                // Special handling for DateOnly and Nullable<DateOnly>
+                else if (propertyType == typeof(DateOnly) || propertyType == typeof(DateOnly?))
+                {
+                    if (value is string stringValue && DateOnly.TryParse(stringValue, out DateOnly parsedDateOnly))
+                    {
+                        property.SetValue(item, parsedDateOnly);
+                    }
+                    else if (value is DateOnly dateOnlyValue)
+                    {
+                        property.SetValue(item, dateOnlyValue);
+                    }
+                    else if (value is DateTime dateTimeValue)
+                    {
+                        property.SetValue(item, DateOnly.FromDateTime(dateTimeValue)); // Convert DateTime to DateOnly
+                    }
+                    else if (propertyType == typeof(DateOnly?))
+                    {
+                        property.SetValue(item, null); // Set nullable DateOnly to null if invalid
+                    }
+                }
                 // Handle integer types
                 else if (propertyType == typeof(int) || propertyType == typeof(int?))
                 {
@@ -193,6 +213,26 @@ public abstract class HandyGridEntityAbstract<T> where T : class, new()
                     else if (propertyType == typeof(DateTime?))
                     {
                         property.SetValue(Object, null); // Set nullable DateTime to null if invalid
+                    }
+                }
+                // Special handling for DateOnly and Nullable<DateOnly>
+                else if (propertyType == typeof(DateOnly) || propertyType == typeof(DateOnly?))
+                {
+                    if (value is string stringValue && DateOnly.TryParse(stringValue, out DateOnly parsedDateOnly))
+                    {
+                        property.SetValue(Object, parsedDateOnly);
+                    }
+                    else if (value is DateOnly dateOnlyValue)
+                    {
+                        property.SetValue(Object, dateOnlyValue);
+                    }
+                    else if (value is DateTime dateTimeValue)
+                    {
+                        property.SetValue(Object, DateOnly.FromDateTime(dateTimeValue)); // Convert DateTime to DateOnly
+                    }
+                    else if (propertyType == typeof(DateOnly?))
+                    {
+                        property.SetValue(Object, null); // Set nullable DateOnly to null if invalid
                     }
                 }
                 // Handle integer types
