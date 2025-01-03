@@ -9,8 +9,6 @@
 @* It is recommended to use only primitive types and certain reference types for the columns
     Usable reference types include only strings and ienumerables of either a string or primitive type
     Other reference types have not been tested and it is recommended to convert them into strings when used
-
-    dotnet pack && dotnet nuget push bin/Release/HandyBlazorComponents.1.0.72.nupkg -s nuget.org -k [insert_api_key]
  *@
 
 <div class="text-center overflow-auto m-3">
@@ -53,7 +51,8 @@
                 <tr>
                     <td>
                         <div style="width: 2.5rem;">
-                            @rowIdx
+                            @* this formula will respect the item numbering relative to the entire collection, so for, lets say, 5 items per page we would have item number 6 on the first row of the second page instead of having it start at 0 again *@
+                            @((CurrentPage - 1) * pageSize + rowIdx + 1)
                         </div>
                     </td>
                     @if (!HandyGridState.IsReadonly)
