@@ -27,6 +27,18 @@ public class HandyGridEntity : HandyGridEntityAbstract<TestClass>
                 return Object.Description;
             case nameof(Object.Descriptions):
                 return string.Join(",", Object.Descriptions);
+            case nameof(Object.CheckBoxTest):
+                return Object.CheckBoxTest.ToString();
+            case nameof(Object.DateTest):
+                return Object.DateTest.ToString();
+            case nameof(Object.DropdownTest):
+                return Object.DropdownTest;
+            case nameof(Object.TextAreaTest):
+                return Object.TextAreaTest;
+            case nameof(Object.ImageUpload):
+                return Object.ImageUpload;
+            case nameof(Object.PdfUpload):
+                return Object.PdfUpload;
             default:
                 throw new Exception("Invalid property name");
         }

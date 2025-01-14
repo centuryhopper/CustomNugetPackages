@@ -13,93 +13,54 @@ using static HandyBlazorComponents.Models.ServiceResponses;
 
 public class GridStateService : HandyGridStateAbstract<HandyGridEntity, TestClass>
 {
-    public GridStateService(List<HandyGridEntity> Items, List<string> ReadonlyColumns, string ExampleFileUploadUrl, Func<IEnumerable<HandyGridEntity>, Task> OnSubmitFile, List<NamedRenderFragment<HandyGridEntity>>? ViewModeFragments, List<NamedRenderFragment<HandyGridEntity>>? EditModeFragments) : base(Items, ReadonlyColumns, ExampleFileUploadUrl, OnSubmitFile, ViewModeFragments, EditModeFragments)
+    public GridStateService(List<HandyGridEntity> Items, int PageSize = 5, string? ExampleFileUploadUrl = null, bool Exportable = false, bool IsReadonly = true, Func<IEnumerable<HandyGridEntity>, Task>? OnCreate = null, Func<HandyGridEntity, Task>? OnUpdate = null, Func<HandyGridEntity, Task>? OnDelete = null, Func<IEnumerable<HandyGridEntity>, Task>? OnSubmitFile = null, List<string>? ColumnsToHide = null, List<string>? ReadonlyColumns = null, List<NamedRenderFragment<HandyGridEntity>>? ViewModeFragments = null, List<NamedRenderFragment<HandyGridEntity>>? EditModeFragments = null) : base(Items, PageSize, ExampleFileUploadUrl, Exportable, IsReadonly, OnCreate, OnUpdate, OnDelete, OnSubmitFile, ColumnsToHide, ReadonlyColumns, ViewModeFragments, EditModeFragments)
     {
-        this.Items = Items;
-        this.OnSubmitFile = OnSubmitFile;
-        this.ReadonlyColumns = ReadonlyColumns;
-        this.ExampleFileUploadUrl = ExampleFileUploadUrl;
-        this.ViewModeFragments = ViewModeFragments;
-        this.EditModeFragments = EditModeFragments;
     }
 
-    public override GridValidationResponse ValidationChecks(HandyGridEntity item, List<string> columns)
+    public override GridValidationResponse ValidationChecks(HandyGridEntity item)
     {
-        Dictionary<int, List<string>> errorMessagesDict = new();
-
-        int titleIndex = columns.IndexOf(nameof(item.Object.Title));
-        int descriptionIndex = columns.IndexOf(nameof(item.Object.Description));
-        int descriptionsIndex = columns.IndexOf(nameof(item.Object.Descriptions));
-
-        // Console.WriteLine($"{titleIndex},{userNameIndex},{passwordIndex}");
+        // clear any previous messages
+        foreach (var key in ErrorMessagesDict.Keys)
+        {
+            ErrorMessagesDict[key].Clear();
+        }
 
         if (string.IsNullOrWhiteSpace(item.Object.Title))
         {
-            if (errorMessagesDict.ContainsKey(titleIndex))
-            {
-                errorMessagesDict[titleIndex].Add($"Please fill out {nameof(item.Object.Title)}");
-            }
-            else
-            {
-                errorMessagesDict.Add(titleIndex, [$"Please fill out {nameof(item.Object.Title)}"]);
-            }
+            ErrorMessagesDict[nameof(item.Object.Title)].Add($"Please fill out {nameof(item.Object.Title)}");
         }
+
         if (string.IsNullOrWhiteSpace(item.Object.Description))
         {
-            if (errorMessagesDict.ContainsKey(descriptionIndex))
-            {
-                errorMessagesDict[descriptionIndex].Add($"Please fill out {nameof(item.Object.Description)}");
-            }
-            else
-            {
-                errorMessagesDict.Add(descriptionIndex, [$"Please fill out {nameof(item.Object.Description)}"]);
-            }
+            ErrorMessagesDict[nameof(item.Object.Description)].Add($"Please fill out {nameof(item.Object.Description)}");
         }
+
+        System.Console.WriteLine(item.Object.Descriptions.Count());
+        System.Console.WriteLine(item.Object.Descriptions.Any());
 
         if (!item.Object.Descriptions.Any())
         {
-            if (errorMessagesDict.ContainsKey(descriptionsIndex))
-            {
-                errorMessagesDict[descriptionsIndex].Add($"Please make at least one selection for {nameof(item.Object.Descriptions)}");
-            }
-            else
-            {
-                errorMessagesDict.Add(descriptionsIndex, [$"Please make at least one selection for {nameof(item.Object.Descriptions)}"]);
-            }
+            ErrorMessagesDict[nameof(item.Object.Descriptions)].Add($"Please make at least one selection for {nameof(item.Object.Descriptions)}");
         }
 
         if (!string.IsNullOrWhiteSpace(item.Object.Title) && item.Object.Title?.Length > 256)
         {
-            if (errorMessagesDict.ContainsKey(titleIndex))
-            {
-                errorMessagesDict[titleIndex].Add("Please make sure all fields are under 256 characters");
-            }
-            else
-            {
-                errorMessagesDict.Add(titleIndex, ["Please make sure all fields are under 256 characters"]);
-            }
+            ErrorMessagesDict[nameof(item.Object.Title)].Add("Please make sure all fields are under 256 characters");
         }
 
         if (!string.IsNullOrWhiteSpace(item.Object.Description) && item.Object.Description?.Length > 256)
         {
-            if (errorMessagesDict.ContainsKey(descriptionIndex))
-            {
-                errorMessagesDict[descriptionIndex].Add("Please make sure all fields are under 256 characters");
-            }
-            else
-            {
-                errorMessagesDict.Add(descriptionIndex, ["Please make sure all fields are under 256 characters"]);
-            }
+            ErrorMessagesDict[nameof(item.Object.Description)].Add("Please make sure all fields are under 256 characters");
         }
         
-        // Console.WriteLine($"{titleIndex},{userNameIndex},{passwordIndex}");
-
-        if (errorMessagesDict.Any())
+        if (ErrorMessagesDict.Any())
         {
-            return new GridValidationResponse(Flag: false, errorMessagesDict);
+            return new GridValidationResponse(Flag: false, ErrorMessagesDict);
         }
 
         return new GridValidationResponse(Flag: true, null);
     }
+
+
 }
 
