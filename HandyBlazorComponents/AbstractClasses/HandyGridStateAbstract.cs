@@ -9,19 +9,19 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
 {
     public List<T> Items;
     public List<string> Columns => typeof(U).GetProperties().Select(prop => prop.Name).ToList();
-    public abstract GridValidationResponse ValidationChecks(T item, List<string> columns);
+    public abstract GridValidationResponse ValidationChecks(T item);
 
     public List<NamedRenderFragment<T>>? EditModeFragments;
     public List<NamedRenderFragment<T>>? ViewModeFragments;
     public List<string> ReadonlyColumns;
     public string ExampleFileUploadUrl;
-    public EventCallback<IEnumerable<T>> SubmitFileAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnSubmitFile);
-    public Func<IEnumerable<T>, Task>? OnSubmitFile;
     public bool Exportable;
     public bool IsReadonly;
     public int PageSize;
     public List<string> ColumnsToHide;
 
+    public EventCallback<IEnumerable<T>> SubmitFileAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnSubmitFile);
+    public Func<IEnumerable<T>, Task>? OnSubmitFile;
     public EventCallback<IEnumerable<T>> OnCreateAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnCreate);
     public Func<IEnumerable<T>, Task>? OnCreate;
 
@@ -30,6 +30,7 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
 
     public EventCallback<T> OnDeleteAction => EventCallback.Factory.Create<T>(this, OnDelete);
     public Func<T, Task>? OnDelete;
+    public Dictionary<string, List<string>> ErrorMessagesDict = new();
 
     public HandyGridStateAbstract(List<T> Items,
         int PageSize = 5,
@@ -50,7 +51,8 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
         this.OnCreate = OnCreate;
         this.OnUpdate = OnUpdate;
         this.OnDelete = OnDelete;
-        this.PageSize = PageSize;
+        // the page size will be restricted to whichever is smaller
+        this.PageSize = Math.Min(PageSize, Items.Count);
         this.IsReadonly = IsReadonly;
         this.ColumnsToHide = ColumnsToHide ?? [];
         this.ReadonlyColumns = ReadonlyColumns ?? [];
@@ -59,5 +61,9 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
         this.Items = Items;
         this.EditModeFragments = EditModeFragments;
         this.ViewModeFragments = ViewModeFragments;
+        foreach (var column in Columns)
+        {
+            ErrorMessagesDict[column] = [];
+        }
     }
 }

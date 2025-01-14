@@ -33,7 +33,7 @@
                                 @column @GetSortIcon(column)
                             </button>
                             <TextInputFilter Value="@GetFilterValue(column)"
-                                ValueChanged="@(value => SetFilterValue(column, value))" PlaceHolder=@($"Filter by {column}") />
+                            ValueChanged="@(value => SetFilterValue(column, value))" PlaceHolder=@($"Filter by {column}") />
                         </th>
                     }
                 }
@@ -61,7 +61,7 @@
                             @if (AllowEdits[rowIdx])
                             {
                                 <button @onclick="@(() => CancelEdit(rowIdx, pagedItemsHelper[rowIdx]))"
-                                    class="btn btn-primary">Cancel</button>
+                                class="btn btn-primary">Cancel</button>
                             }
                             else
                             {
@@ -70,8 +70,8 @@
                         </td>
                     }
                     @foreach (var (columnIdx, columnName) in HandyGridState.Columns.Select((columnName, columnIdx) =>
-                   (columnIdx,
-                   columnName)))
+                  (columnIdx,
+                  columnName)))
                     {
                         if (!HandyGridState.ColumnsToHide.Contains(columnName))
                         {
@@ -80,7 +80,7 @@
                                 @if (!HandyGridState.ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
                                 {
                                     @if (HandyGridState.EditModeFragments != null &&
-                                HandyGridState.EditModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
+                               HandyGridState.EditModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
                                     {
                                         var template = HandyGridState.EditModeFragments.First(x => x.Name == columnName);
                                         <div class="d-flex align-items-center p-3">
@@ -91,8 +91,8 @@
                                     {
                                         <div class="d-flex align-items-center p-3">
                                             <input value="@(pagedItemsHelper[rowIdx].DisplayPropertyInGrid(columnName))"
-                                                @oninput="(e) => pagedItemsHelper[rowIdx].SetPropertyValue(columnName, e.Value)"
-                                                class="form-control" style="width: 10rem" />
+                                            @oninput="(e) => pagedItemsHelper[rowIdx].SetPropertyValue(columnName, e.Value)"
+                                            class="form-control" style="width: 10rem" />
                                         </div>
                                     }
                                 }
@@ -100,7 +100,7 @@
                                 else
                                 {
                                     @if (HandyGridState.ViewModeFragments != null &&
-                                HandyGridState.ViewModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
+                               HandyGridState.ViewModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
                                     {
                                         var template = HandyGridState.ViewModeFragments.First(x => x.Name == columnName);
                                         @(template.Fragment(pagedItemsHelper[rowIdx]))
@@ -120,12 +120,12 @@
                     {
                         <td>
                             <button disabled="@(!AllowEdits[rowIdx])"
-                                @onclick="@(() => UpdateRow(rowIdx, pagedItemsHelper[rowIdx]))"
-                                class="btn btn-primary">Update</button>
+                            @onclick="@(() => UpdateRow(rowIdx, pagedItemsHelper[rowIdx]))"
+                            class="btn btn-primary">Update</button>
                         </td>
                         <td>
                             <button @onclick="@(() => DeleteRow(pagedItemsHelper[rowIdx]))"
-                                class="btn btn-danger">DELETE</button>
+                            class="btn btn-danger">DELETE</button>
                         </td>
                     }
                 </tr>
@@ -135,12 +135,15 @@
 </div>
 
 <ConfirmModal @ref="confirmModal" Title="Warning"
-    BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
+BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 <CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="OnPageChanged" />
 
 <AddDynamicItemsModal TItem="TItem" TEntity="TEntity" @ref="AddDynamicItemsModal"  />
 
-<button class="btn btn-primary" @onclick="AddNewItems">Add New Items</button>
+@if (!HandyGridState.IsReadonly)
+{
+    <button class="btn btn-primary" @onclick="AddNewItems">Add New Items</button>
+}
 
 @if (HandyGridState.Exportable)
 {
@@ -153,6 +156,7 @@
 
 
 @code {
+
     private ConfirmModal confirmModal = default!;
     private NotificationModal notificationModal = default!;
     private AddDynamicItemsModal<TItem, TEntity> AddDynamicItemsModal = default!;
@@ -160,14 +164,10 @@
     [CascadingParameter(Name = nameof(HandyGridState))]
     public HandyGridStateAbstract<TEntity, TItem> HandyGridState { get; set; }
 
-    //[Parameter]
-    //public EventCallback<IEnumerable<TEntity>> HandyGridState.OnCreate { get; set; }
-    //[Parameter]
-    //public EventCallback<TEntity> HandyGridState.OnUpdate { get; set; }
-    //[Parameter]
-    //public EventCallback<TEntity> HandyGridState.OnDelete { get; set; }
-    //[Parameter]
-    //public int PageSize {get;set;} = 5;
+    // used to listen for changes from parent component
+    [Parameter]
+    public List<TEntity> Items {get;set;}
+
 
 
 
@@ -178,7 +178,6 @@
 
     private List<bool> AllowEdits = new();
     private Dictionary<string, string> FilterValues { get; set; } = new();
-    //private List<string>? Columns { get; set; }
     private IEnumerable<TEntity> filteredItems =>
     HandyGridState.Items.Where(item => FilterQuery(item));
 
@@ -214,16 +213,16 @@
     {
         ItemsToAdd = await AddDynamicItemsModal.ShowAsync();
         // ItemsToAdd.ForEach(item => Console.WriteLine(item));
-        int maxId = HandyGridState.Items.Any() ? HandyGridState.Items.Max(o => o.GetPrimaryKey()) : -1;
+        //int maxId = HandyGridState.Items.Any() ? HandyGridState.Items.Max(o => o.GetPrimaryKey()) : -1;
         // Console.WriteLine("maxId: " + maxId);
         if (ItemsToAdd.Any())
         {
-            for (int i = 0; i < ItemsToAdd.Count; i++)
-            {
-                ItemsToAdd[i].SetPrimaryKey(++maxId);
-            }
+            //for (int i = 0; i < ItemsToAdd.Count; i++)
+            //{
+            //    ItemsToAdd[i].SetPrimaryKey(++maxId);
+            //}
 
-            HandyGridState.Items.AddRange(ItemsToAdd);
+            //HandyGridState.Items.AddRange(ItemsToAdd);
 
             // server call
             await HandyGridState.OnCreateAction.InvokeAsync(ItemsToAdd);
@@ -341,7 +340,7 @@
     private async Task UpdateRow(int rowIdx, TEntity item)
     {
         // find out rows that have errors
-        var validation = HandyGridState.ValidationChecks(item, HandyGridState.Columns);
+        var validation = HandyGridState.ValidationChecks(item);
         if (!validation.Flag)
         {
             // reset
@@ -355,8 +354,11 @@
             // show errors
             foreach (var kvp in validation.ErrorMessagesDict)
             {
-                //Console.WriteLine(kvp.Key);
-                ErrorMessages[rowIdx, kvp.Key] = string.Join(",", kvp.Value);
+                // Console.WriteLine(kvp.Key);
+                int colIdx = HandyGridState.Columns.IndexOf(kvp.Key);
+                if (colIdx == -1)
+                    continue;
+                ErrorMessages[rowIdx, colIdx] = string.Join(",", kvp.Value);
             }
         }
         else

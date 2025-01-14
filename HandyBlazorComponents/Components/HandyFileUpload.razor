@@ -31,7 +31,9 @@
         if (file != null)
         {
             using var stream = new MemoryStream();
-            await file.OpenReadStream().CopyToAsync(stream);
+            // allow for 2GB size max
+            long maxFileSize = 2L * 1024L * 1024L * 1024L;
+            await file.OpenReadStream(maxAllowedSize: maxFileSize).CopyToAsync(stream);
             var fileBytes = stream.ToArray();
 
             // Set the byte array to the specified property in TItem
