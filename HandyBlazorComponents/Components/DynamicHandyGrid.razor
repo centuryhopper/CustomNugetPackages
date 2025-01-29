@@ -209,21 +209,12 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         set => _errorMessages = value;
     }
 
+    // leave in memory changes up to the user
     private async Task AddNewItems()
     {
         ItemsToAdd = await AddDynamicItemsModal.ShowAsync();
-        // ItemsToAdd.ForEach(item => Console.WriteLine(item));
-        //int maxId = HandyGridState.Items.Any() ? HandyGridState.Items.Max(o => o.GetPrimaryKey()) : -1;
-        // Console.WriteLine("maxId: " + maxId);
         if (ItemsToAdd.Any())
         {
-            //for (int i = 0; i < ItemsToAdd.Count; i++)
-            //{
-            //    ItemsToAdd[i].SetPrimaryKey(++maxId);
-            //}
-
-            //HandyGridState.Items.AddRange(ItemsToAdd);
-
             // server call
             await HandyGridState.OnCreateAction.InvokeAsync(ItemsToAdd);
         }
@@ -337,6 +328,7 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         // Columns.ForEach(c=>Console.WriteLine(c));
     }
 
+    // leave in memory changes up to the user
     private async Task UpdateRow(int rowIdx, TEntity item)
     {
         // find out rows that have errors
@@ -376,43 +368,43 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
             return;
         }
 
-        for (int i = 0; i < HandyGridState.Items.Count; i++)
-        {
-            if (HandyGridState.Items[i].GetPrimaryKey() == item.GetPrimaryKey())
-            {
-                var props = new Dictionary<string, object>();
-
-                foreach (var columnName in HandyGridState.Columns)
-                {
-                    // SetPropertyValue(Items[i], item, columnName);
-                    props.Add(columnName, item.GetPropertyValue(columnName)!);
-                    //Console.WriteLine(item.GetPropertyValue(columnName));
-                }
-
-                HandyGridState.Items[i].SetProperties(props);
-            }
-        }
+        //for (int i = 0; i < HandyGridState.Items.Count; i++)
+        //{
+        //    if (HandyGridState.Items[i].GetPrimaryKey() == item.GetPrimaryKey())
+        //    {
+        //        var props = new Dictionary<string, object>();
+//
+        //        foreach (var columnName in HandyGridState.Columns)
+        //        {
+        //            // SetPropertyValue(Items[i], item, columnName);
+        //            props.Add(columnName, item.GetPropertyValue(columnName)!);
+        //            //Console.WriteLine(item.GetPropertyValue(columnName));
+        //        }
+//
+        //        HandyGridState.Items[i].SetProperties(props);
+        //    }
+        //}
 
         //UpdatePagedItems();
 
         AllowEdits[rowIdx] = false;
 
-
         await HandyGridState.OnUpdateAction.InvokeAsync(item);
     }
 
+    // leave in memory changes up to the user
     private async Task DeleteRow(TEntity entity)
     {
         //Console.WriteLine(item.GetPrimaryKey());
         var response = await confirmModal.ShowAsync();
         if (response)
         {
-            var itemToRemove = HandyGridState.Items.FirstOrDefault(o => o.GetPrimaryKey() == entity.GetPrimaryKey());
-            if (itemToRemove != null)
-            {
-                HandyGridState.Items.Remove(itemToRemove);
-            }
-            //Console.WriteLine(Items.Count);
+            //var itemToRemove = HandyGridState.Items.FirstOrDefault(o => o.GetPrimaryKey() == entity.GetPrimaryKey());
+            //if (itemToRemove != null)
+            //{
+            //    HandyGridState.Items.Remove(itemToRemove);
+            //}
+            // Console.WriteLine(Items.Count);
             await HandyGridState.OnDeleteAction.InvokeAsync(entity);
         }
     }

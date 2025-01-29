@@ -9,7 +9,14 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
 {
     public List<T> Items;
     public List<string> Columns => typeof(U).GetProperties().Select(prop => prop.Name).ToList();
-    public abstract GridValidationResponse ValidationChecks(T item);
+    public virtual GridValidationResponse ValidationChecks(T item)
+    {
+        foreach (var key in ErrorMessagesDict.Keys)
+        {
+            ErrorMessagesDict[key].Clear();
+        }
+        return default!;
+    }
 
     public List<NamedRenderFragment<T>>? EditModeFragments;
     public List<NamedRenderFragment<T>>? ViewModeFragments;
@@ -51,8 +58,8 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
         this.OnCreate = OnCreate;
         this.OnUpdate = OnUpdate;
         this.OnDelete = OnDelete;
-        // the page size will be restricted to whichever is smaller
-        this.PageSize = Math.Min(PageSize, Items.Count);
+        // if the take size is greater than collection size, no exception is thrown. Instead, the method simply returns all available elements in the collection.
+        this.PageSize = PageSize;
         this.IsReadonly = IsReadonly;
         this.ColumnsToHide = ColumnsToHide ?? [];
         this.ReadonlyColumns = ReadonlyColumns ?? [];
