@@ -2,9 +2,9 @@ using HandyBlazorComponents.Abstracts;
 using HandyBlazorComponents.Models;
 using Microsoft.AspNetCore.Components;
 using static HandyBlazorComponents.Models.ServiceResponses;
-
+ 
 namespace HandyBlazorComponents.Abstracts;
-
+ 
 public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbstract<U> where U : class, new()
 {
     public List<T> Items;
@@ -17,33 +17,41 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
         }
         return default!;
     }
-
+ 
     public List<NamedRenderFragment<T>>? EditModeFragments;
     public List<NamedRenderFragment<T>>? ViewModeFragments;
     public List<string> ReadonlyColumns;
     public string ExampleFileUploadUrl;
     public bool Exportable;
     public bool IsReadonly;
+    public bool ShowRowIndex;
+    public bool ShowFilters;
     public int PageSize;
     public List<string> ColumnsToHide;
-
+ 
     public EventCallback<IEnumerable<T>> SubmitFileAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnSubmitFile);
     public Func<IEnumerable<T>, Task>? OnSubmitFile;
     public EventCallback<IEnumerable<T>> OnCreateAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnCreate);
     public Func<IEnumerable<T>, Task>? OnCreate;
-
+ 
     public EventCallback<T> OnUpdateAction => EventCallback.Factory.Create<T>(this, OnUpdate);
     public Func<T, Task>? OnUpdate;
-
+ 
     public EventCallback<T> OnDeleteAction => EventCallback.Factory.Create<T>(this, OnDelete);
     public Func<T, Task>? OnDelete;
     public Dictionary<string, List<string>> ErrorMessagesDict = new();
-
+    public string AddNewItemsText;
+    public bool CanAddNewItems;
+ 
     public HandyGridStateAbstract(List<T> Items,
         int PageSize = 5,
+        bool CanAddNewItems = true,
         string? ExampleFileUploadUrl = null,
+        string AddNewItemsText = "Add New Items",
         bool Exportable = false,
         bool IsReadonly = true,
+        bool ShowRowIndex = true,
+        bool ShowFilters = true,
         Func<IEnumerable<T>, Task>? OnCreate = null,
         Func<T, Task>? OnUpdate = null,
         Func<T, Task>? OnDelete = null,
@@ -54,13 +62,16 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
         List<NamedRenderFragment<T>>? EditModeFragments = null
     )
     {
+        this.CanAddNewItems = CanAddNewItems;
         this.Exportable = Exportable;
         this.OnCreate = OnCreate;
         this.OnUpdate = OnUpdate;
         this.OnDelete = OnDelete;
-        // if the take size is greater than collection size, no exception is thrown. Instead, the method simply returns all available elements in the collection.
         this.PageSize = PageSize;
+        this.AddNewItemsText = AddNewItemsText;
         this.IsReadonly = IsReadonly;
+        this.ShowRowIndex = ShowRowIndex;
+        this.ShowFilters = ShowFilters;
         this.ColumnsToHide = ColumnsToHide ?? [];
         this.ReadonlyColumns = ReadonlyColumns ?? [];
         this.ExampleFileUploadUrl = ExampleFileUploadUrl ?? string.Empty;
