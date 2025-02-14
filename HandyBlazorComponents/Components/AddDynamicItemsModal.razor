@@ -16,7 +16,8 @@
                         Add Items to Your Collection
                     </p>
                     <div style="overflow: auto; hyphens: auto;" class="p-1">
-                        <button class="btn btn-primary mt-3 mb-3" @onclick="AddItem">Add New Item</button>
+                        <input type="number" @bind="RowNumber" placeholder="Enter row number (max: 40)" class="form-control" min="0" max="40">
+                        <button class="btn btn-primary mt-3 mb-3" @onclick="AddRows">Add New Item</button>
                         @if (ItemsToAdd.Any())
                         {
                             <table class="table-bordered table-striped table-hover table-sm text-center" style="max-width: 90%;">
@@ -52,12 +53,6 @@
                                                     else
                                                     {
                                                         <div class="d-flex align-items-center p-3">
-                                                            @* <input value="@(GetPropertyValue(ItemsToAdd[rowIdx].Object, columnName))"
-                                                                @oninput="(e) => SetPropertyValue(ItemsToAdd[rowIdx].Object, e.Value, columnName)" class="form-control"
-                                                                style="width: 10rem" /> *@
-                                                            @* <input value="@(ItemsToAdd[rowIdx].GetPropertyValue(columnName))"
-                                                                @oninput="(e) => SetPropertyValue(ItemsToAdd[rowIdx].Object, e.Value, columnName)" class="form-control"
-                                                                style="width: 10rem" /> *@
                                                             <input value="@(ItemsToAdd[rowIdx].GetPropertyValue(columnName))"
                                                             @oninput="(e) => ItemsToAdd[rowIdx].SetPropertyValue(columnName, e.Value)" class="form-control"
                                                             style="width: 10rem" />
@@ -117,6 +112,7 @@
     }
 
     private List<string>? Columns { get; set; }
+    private int? RowNumber = null;
 
     protected override void OnInitialized()
     {
@@ -127,26 +123,15 @@
         .ToList();
     }
 
-    private void AddItem()
+    private void AddRows()
     {
-        TEntity item = new();
-        ItemsToAdd.Add(item);
+        if (RowNumber < 0 || RowNumber > 40)
+        {
+            return;
+        }
+        ItemsToAdd.AddRange(Enumerable.Range(0, RowNumber.GetValueOrDefault()).Select(_ => new TEntity()));
+        RowNumber = null;
     }
-
-    //private object? GetPropertyValue(TItem item, string propertyName)
-    //{
-    //    //Console.WriteLine(item);
-    //    return typeof(TItem).GetProperty(propertyName)?.GetValue(item);
-    //}
-
-    //private void SetPropertyValue(TItem item, object? value, string propertyName)
-    //{
-    //    var property = typeof(TItem).GetProperty(propertyName);
-    //    if (property != null && property.CanWrite && value != null)
-    //    {
-    //        property.SetValue(item, Convert.ChangeType(value, property.PropertyType));
-    //    }
-    //}
 
     private void RemoveItem(TEntity entity)
     {

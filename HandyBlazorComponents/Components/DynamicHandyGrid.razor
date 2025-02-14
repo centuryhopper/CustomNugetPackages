@@ -3,15 +3,34 @@
 @using System.Linq.Expressions
 @using HandyBlazorComponents.Abstracts
 @using HandyBlazorComponents.Components
- 
- 
+
+
 @* This grid has pagination and filtering and sorting along with all CRUD operations *@
-@* It is recommended to use only primitive types and certain reference types for the columns
+@*
+    It is recommended to use only primitive types and certain reference types for the columns
     Usable reference types include only strings and ienumerables of either a string or primitive type
     Other reference types have not been tested and it is recommended to convert them into strings when used
- *@
- 
+
+    Potential new features:
+        add new rows based on user input row number
+        ---give user a dropdown list that controls the number of rows to show per page---
+        ---make the handytoast messages appear in a stack-like fashion---
+*@
+
+<span>Show</span>
+<select 
+value="@HandyGridState.PageSize"
+@onchange="@(e => OnPageSizeChange(e))"
+>
+    <option value="">-- Select --</option>
+    @foreach (var pgSize in new List<int>{5,10,25,50,100})
+    {
+        <option value="@pgSize">@pgSize</option>
+    }
+</select>
+<span>entries</span>
 <div class="text-center overflow-auto m-3">
+
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
@@ -79,8 +98,8 @@
                         </td>
                     }
                     @foreach (var (columnIdx, columnName) in HandyGridState.Columns.Select((columnName, columnIdx) =>
-                  (columnIdx,
-                  columnName)))
+                (columnIdx,
+                columnName)))
                     {
                         if (!HandyGridState.ColumnsToHide.Contains(columnName))
                         {
@@ -89,7 +108,7 @@
                                 @if (!HandyGridState.ReadonlyColumns.Contains(columnName) && AllowEdits[rowIdx])
                                 {
                                     @if (HandyGridState.EditModeFragments != null &&
-                               HandyGridState.EditModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
+                           HandyGridState.EditModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
                                     {
                                         var template = HandyGridState.EditModeFragments.First(x => x.Name == columnName);
                                         <div class="d-flex align-items-center p-3">
@@ -109,7 +128,7 @@
                                 else
                                 {
                                     @if (HandyGridState.ViewModeFragments != null &&
-                               HandyGridState.ViewModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
+                           HandyGridState.ViewModeFragments.FirstOrDefault(x => x.Name == columnName) != null)
                                     {
                                         var template = HandyGridState.ViewModeFragments.First(x => x.Name == columnName);
                                         @(template.Fragment(pagedItemsHelper[rowIdx]))
@@ -120,7 +139,7 @@
                                         <span>@(pagedItemsHelper[rowIdx].DisplayPropertyInGrid(columnName))</span>
                                     }
                                 }
- 
+
                                 <span class="text-danger">@ErrorMessages[rowIdx, columnIdx]</span>
                             </td>
                         }
@@ -142,54 +161,54 @@
         </tbody>
     </table>
 </div>
- 
+
 <ConfirmModal @ref="confirmModal" Title="Warning"
 BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 <CustomPagination CurrentPage="CurrentPage" TotalPages="TotalPages" OnPageChanged="OnPageChanged" />
- 
+
 <AddDynamicItemsModal TItem="TItem" TEntity="TEntity" @ref="AddDynamicItemsModal"  />
- 
+
 @if (!HandyGridState.IsReadonly || HandyGridState.CanAddNewItems)
 {
     <button class="btn btn-primary" @onclick="AddNewItems">@HandyGridState.AddNewItemsText</button>
 }
- 
+
 @if (HandyGridState.Exportable)
 {
     <div class="m-3">
         <button class="btn btn-info" @onclick="ExportTableAsCsv">Export Table as CSV</button>
     </div>
 }
- 
+
 <NotificationModal @ref="notificationModal" />
- 
- 
+
+
 @code {
- 
+
     private ConfirmModal confirmModal = default!;
     private NotificationModal notificationModal = default!;
     private AddDynamicItemsModal<TItem, TEntity> AddDynamicItemsModal = default!;
- 
+
     [CascadingParameter(Name = nameof(HandyGridState))]
     public HandyGridStateAbstract<TEntity, TItem> HandyGridState { get; set; }
- 
+
     // used to listen for changes from parent component
     [Parameter]
     public List<TEntity> Items {get;set;}
- 
- 
- 
- 
+
+
+
+
     private int CurrentPage { get; set; } = 1;
- 
+
     private int pageSize => HandyGridState.PageSize; // Number of items per page
     private int TotalPages => (int)Math.Ceiling((double)filteredItems.Count() / pageSize);
- 
+
     private List<bool> AllowEdits = new();
     private Dictionary<string, string> FilterValues { get; set; } = new();
     private IEnumerable<TEntity> filteredItems =>
     HandyGridState.Items.Where(item => FilterQuery(item));
- 
+
     private List<TEntity> pagedItems = new();
     /// <summary>
     /// A temp list in the dynamic handy grid so that the cancel function can be used to revert back the old values in the
@@ -201,9 +220,9 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
     private string sortColumn;
     private bool sortAscending = true;
     private List<TEntity> ItemsToAdd = new();
- 
+
     private string[,] _errorMessages;
- 
+
     private string[,] ErrorMessages
     {
         get
@@ -217,7 +236,16 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         }
         set => _errorMessages = value;
     }
- 
+
+
+    private async Task OnPageSizeChange(ChangeEventArgs value)
+    {
+        // default to page size of 5
+        HandyGridState.PageSize = Convert.ToInt32(string.IsNullOrEmpty(value.Value?.ToString()) ? "5": value.Value?.ToString());
+        UpdatePagedItems();
+        //Console.WriteLine(pageSize);
+    }
+
     private async Task AddNewItems()
     {
         ItemsToAdd = await AddDynamicItemsModal.ShowAsync();
@@ -230,14 +258,14 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
             //{
             //    ItemsToAdd[i].SetPrimaryKey(++maxId);
             //}
- 
+
             //HandyGridState.Items.AddRange(ItemsToAdd);
- 
+
             // server call
             await HandyGridState.OnCreateAction.InvokeAsync(ItemsToAdd);
         }
     }
- 
+
     // Handle page change event
     private void OnPageChanged(int newPage)
     {
@@ -246,7 +274,7 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         UpdatePagedItems();
         //StateHasChanged();
     }
- 
+
     private void SortData(string columnName)
     {
         if (sortColumn == columnName)
@@ -258,27 +286,27 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
             sortColumn = columnName; // Set new column to sort
             sortAscending = true; // Default to ascending
         }
- 
+
         UpdatePagedItems();
     }
- 
+
     private void UpdatePagedItems()
     {
         var itemsQuery = filteredItems.AsQueryable();
- 
+
         // Apply sorting using reflection
         if (!string.IsNullOrWhiteSpace(sortColumn))
         {
             var param = Expression.Parameter(typeof(TEntity), "entity");
- 
+
             // Navigate to the TItem property of TEntity
             var tItemProperty = Expression.PropertyOrField(param, "Object"); // Replace 'TItem' with the actual property name of
- 
+
             // Access the target property or field on TItem
             var property = Expression.PropertyOrField(tItemProperty, sortColumn);
- 
+
             Expression sortExpression;
- 
+
             // Check if the property is IEnumerable<string>
             if (typeof(IEnumerable<string>).IsAssignableFrom(property.Type) && property.Type != typeof(string))
             {
@@ -291,14 +319,14 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
                 // Convert property to object for non-IEnumerable<string> types
                 sortExpression = Expression.Convert(property, typeof(object));
             }
- 
+
             // Create the lambda expression for sorting
             var lambda = Expression.Lambda<Func<TEntity, object>>(sortExpression, param);
- 
+
             // Apply sorting
             itemsQuery = sortAscending ? itemsQuery.OrderBy(lambda) : itemsQuery.OrderByDescending(lambda);
         }
- 
+
         pagedItems = itemsQuery.Skip((CurrentPage - 1) * pageSize).Take(pageSize).ToList();
         //pagedItemsHelper = DeepCopy(pagedItems);
         pagedItemsHelper = pagedItems.Select(item =>
@@ -309,31 +337,31 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         }).ToList();
         AllowEdits = Enumerable.Repeat(false, pagedItems.Count).ToList();
         // Console.WriteLine(AllowEdits.Count);
- 
+
         StateHasChanged();
     }
- 
+
     private bool FilterQuery(TEntity item)
     {
         bool nullOrWhiteSpaceCheck = FilterValues.Values.All(
         filter => string.IsNullOrWhiteSpace(filter)
         );
- 
+
         bool containsCheck = HandyGridState.Columns
         .Any(columnName =>
         !string.IsNullOrWhiteSpace(FilterValues[columnName]) &&
         item.DisplayPropertyInGrid(columnName).ToString().Contains(FilterValues[columnName],
         StringComparison.OrdinalIgnoreCase));
- 
+
         return nullOrWhiteSpaceCheck || containsCheck;
     }
- 
+
     protected override void OnParametersSet()
     {
         UpdatePagedItems();
         // Console.WriteLine("parameters changed");
     }
- 
+
     protected override void OnInitialized()
     {
         //Columns = typeof(TItem).GetProperties().Select(prop => prop.Name).ToList();
@@ -345,7 +373,7 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         //Filters = Enumerable.Repeat(string.Empty, Columns.Count).ToList();
         // Columns.ForEach(c=>Console.WriteLine(c));
     }
- 
+
     private async Task UpdateRow(int rowIdx, TEntity item)
     {
         // find out rows that have errors
@@ -359,7 +387,7 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
             {
                 ErrorMessages[rowIdx, columnIdx] = "";
             }
- 
+
             // show errors
             foreach (var kvp in validation.ErrorMessagesDict)
             {
@@ -377,39 +405,39 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
                 ErrorMessages[rowIdx, columnIdx] = "";
             }
         }
- 
- 
+
+
         // checks if any of the cells still has errors
         if (ErrorMessages.Cast<string>().Any(errMsg => !string.IsNullOrWhiteSpace(errMsg)))
         {
             return;
         }
- 
+
         //for (int i = 0; i < HandyGridState.Items.Count; i++)
         //{
         //    if (HandyGridState.Items[i].GetPrimaryKey() == item.GetPrimaryKey())
         //    {
         //        var props = new Dictionary<string, object>();
-//
+        //
         //        foreach (var columnName in HandyGridState.Columns)
         //        {
         //            // SetPropertyValue(Items[i], item, columnName);
         //            props.Add(columnName, item.GetPropertyValue(columnName)!);
         //            //Console.WriteLine(item.GetPropertyValue(columnName));
         //        }
-//
+        //
         //        HandyGridState.Items[i].SetProperties(props);
         //    }
         //}
- 
+
         //UpdatePagedItems();
- 
+
         AllowEdits[rowIdx] = false;
- 
- 
+
+
         await HandyGridState.OnUpdateAction.InvokeAsync(item);
     }
- 
+
     private async Task DeleteRow(TEntity entity)
     {
         //Console.WriteLine(item.GetPrimaryKey());
@@ -425,7 +453,7 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
             await HandyGridState.OnDeleteAction.InvokeAsync(entity);
         }
     }
- 
+
     private async Task CancelEdit(int rowIdx, TEntity entity)
     {
         // clear error messages
@@ -433,58 +461,67 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         {
             ErrorMessages[rowIdx, columnIdx] = "";
         }
- 
+
         foreach (var columnName in HandyGridState.Columns)
         {
             //SetPropertyValue(pagedItemsHelper[rowIdx], GetPropertyValue(pagedItems[rowIdx], columnName), columnName);
             pagedItemsHelper[rowIdx].SetPropertyValue(columnName, pagedItems[rowIdx].GetPropertyValue(columnName));
         }
- 
+
         AllowEdits[rowIdx] = false;
     }
- 
+
     private async Task BeginEdit(int rowIdx)
     {
         AllowEdits[rowIdx] = true;
     }
- 
+
     private string GetFilterValue(string column)
     {
         //Console.WriteLine(column);
         //Console.WriteLine(FilterValues[column]);
         return FilterValues.ContainsKey(column) ? FilterValues[column] : "";
     }
- 
+
     private void SetFilterValue(string column, string value)
     {
         //Console.WriteLine("setting: " + column + " to " + value);
         FilterValues[column] = value;
         FilterItems();
     }
- 
+
     private void FilterItems()
     {
         // Filtering logic based on FilterValues
         CurrentPage = 1;
         UpdatePagedItems();
     }
- 
+
     private string GetSortIcon(string columnName)
     {
         return sortColumn == columnName ? (sortAscending ? "↑" : "↓") : string.Empty; // Return an up or down arrow based on
     }
- 
+
     private async Task ExportTableAsCsv()
     {
         var result = string.Join(",", HandyGridState.Columns);
         result += '\n';
+        // Console.WriteLine(result);
         foreach (var acc in HandyGridState.Items)
         {
-            var stringified = HandyGridState.Columns.Select(col => acc.DisplayPropertyInGrid(col).ToString()?.Replace(",", "+"));
-            result += $"{string.Join(",", stringified)}\n";
+            List<string> stringified = [];
+            foreach (var col in HandyGridState.Columns)
+            {
+                var item = acc.DisplayPropertyInGrid(col)?.ToString()?.Replace(",", "+");
+                stringified.Add(item ?? string.Empty);
+            }
+
+            // var stringified = HandyGridState.Columns.Select(col => acc.DisplayPropertyInGrid(col).ToString()?.Replace(",", "+"));
+
+            var list = stringified.ToList();
+            result += $"{string.Join(",", list)}\n";
         }
         await jsRuntime.InvokeVoidAsync("saveAsFile", "data.csv", result);
     }
- 
+
 }
- 

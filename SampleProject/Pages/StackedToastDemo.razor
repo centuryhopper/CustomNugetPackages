@@ -1,0 +1,37 @@
+@page "/stacked-toast-demo"
+
+<StackedHandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." Position="HandyToastPosition.CENTER_ALIGN"/>
+
+<label>Stacked Toast demo:</label>
+<div class="row">
+    <div class="col">
+        <button class="btn btn-primary" @onclick="@(()=>ShowToastAsync("Notice!", "This is an info toast pop up", HandyToastType.INFO))">
+            Show Info Popup
+        </button>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary" @onclick="@(()=>ShowToastAsync("Warning!", "This is a warning toast pop up", HandyToastType.WARNING))">
+            Show Warning Popup
+        </button>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary" @onclick="@(()=>ShowToastAsync("Success!", "This is a success toast pop up", HandyToastType.SUCCESS))">
+            Show Success Popup
+        </button>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary" @onclick="@(()=>ShowToastAsync("Error!", "This is an error toast pop up", HandyToastType.ERROR))">
+            Show Error Popup
+        </button>
+    </div>
+</div>
+
+@code {
+    private StackedHandyToast handyToast = default!;
+
+    private async Task ShowToastAsync(string Title, string Message, HandyToastType? handyToastType)
+    {
+        _ = handyToast.ShowToastAsync(Title, Message, handyToastType);
+    }
+
+}

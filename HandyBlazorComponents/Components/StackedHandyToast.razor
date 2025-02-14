@@ -1,0 +1,109 @@
+<div style="@toastPostionStyling">
+    @foreach (var toast in Toasts)
+    {
+        <div class="toast-container @toast.ToastTypeClass" role="alert" style="display: block; margin-bottom: 10px;">
+            <div class="toast-header">
+                <strong>@toast.Title</strong>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="() => RemoveToast(toast.Id)">✕</button>
+            </div>
+            <div class="toast-body">
+                @toast.Message
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .toast-container {
+        min-width: 250px;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .toast-header {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+    }
+    .toast-body {
+        margin-top: 0.5rem;
+    }
+    .toast-info { background-color: #17a2b8; }
+    .toast-success { background-color: #28a745; }
+    .toast-warning { background-color: #ffc107; color: #212529; }
+    .toast-error { background-color: #dc3545; }
+    .btn-close {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    
+
+    [Parameter] public HandyToastPosition Position {get;set;} = HandyToastPosition.LEFT_ALIGN;
+    [Parameter] public string Title { get; set; } = "Notification";
+    [Parameter] public string Message { get; set; } = "This is a toast message.";
+    [Parameter] public HandyToastType ToastType { get; set; } = HandyToastType.INFO; // Use the enum here
+
+    /// <summary>
+    /// Duration in seconds
+    /// </summary>
+    /// <value></value>
+    [Parameter] public int Duration { get; set; } = 5;
+    
+    private string toastPostionStyling => Position switch
+    {
+        HandyToastPosition.LEFT_ALIGN => "position: fixed; top: 10px; left: 10px; z-index: 1050;",
+        HandyToastPosition.RIGHT_ALIGN => "position: fixed; top: 10px; right: 10px; z-index: 1050;",
+        HandyToastPosition.CENTER_ALIGN => "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;",
+        _ => "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;"
+    };
+
+    private class ToastMessage
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Title { get; set; } = "Notification";
+        public string Message { get; set; } = "This is a toast message.";
+        public string ToastTypeClass { get; set; } = "toast-info";
+    }
+
+    private List<ToastMessage> Toasts { get; set; } = new();
+
+    public async Task ShowToastAsync(string? title, string? message, HandyToastType? toastType)
+    {
+        var toast = new ToastMessage
+        {
+            Title = string.IsNullOrWhiteSpace(title) ? Title : title,
+            Message = string.IsNullOrWhiteSpace(message) ? Message : message,
+            ToastTypeClass = toastType switch
+            {
+                HandyToastType.SUCCESS => "toast-success",
+                HandyToastType.WARNING => "toast-warning",
+                HandyToastType.ERROR => "toast-error",
+                _ => "toast-info",
+            }
+        };
+
+        Toasts.Add(toast);
+        StateHasChanged();
+
+        await Task.Delay(Duration * 1000);
+
+        RemoveToast(toast.Id);
+    }
+
+    private void RemoveToast(Guid toastId)
+    {
+        var toast = Toasts.FirstOrDefault(t => t.Id == toastId);
+        if (toast != null)
+        {
+            Toasts.Remove(toast);
+            StateHasChanged();
+        }
+    }
+}
