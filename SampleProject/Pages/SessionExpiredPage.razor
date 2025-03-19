@@ -1,0 +1,9 @@
+@page "/session-expired"
+@inject NavigationManager NavigationManager
+ 
+<SessionExpired RedirectCallback="@(async () => {
+    // you can do stuff like remove the old jwt token
+    // Console.WriteLine(NavigationManager.BaseUri);
+    // navigate to home page
+    NavigationManager.NavigateTo(NavigationManager.BaseUri, forceLoad: true);
+})" />

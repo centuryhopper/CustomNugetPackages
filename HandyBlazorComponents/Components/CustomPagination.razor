@@ -9,10 +9,10 @@
 <div class="container">
     @if (TotalPages > 0)
     {
-        <div class="d-flex flex-row-reverse">
-            <p>Page Number</p>
-        </div>
         <ul class="pagination justify-content-end">
+            @* <div class="d-flex flex-row-reverse">
+                <p>Page Number</p>
+            </div> *@
             @{
                 var firstPageDisabled = (CurrentPage > 1 ? "" : "disabled");
                 var firstPageColored = (CurrentPage > 1 ? "color: blue;" : "");

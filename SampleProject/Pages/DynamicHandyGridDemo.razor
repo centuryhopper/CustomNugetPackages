@@ -2,11 +2,11 @@
 @using Client.Models
 @using Client.Services
 @using HandyBlazorComponents.Abstracts
-
-
+@* @using SampleProject.TestComponents *@
+ 
+ 
 <div class="m-5">
     <div>Dynamic HandyGrid demo:</div>
-
     @if (doneLoadingLst)
     {
         <CascadingValue Name="HandyGridState" Value="handyGridState" IsFixed="true">
@@ -18,19 +18,19 @@
         <span class="spinner-border spinner-border-sm mr-1"></span>
     }
 </div>
-
-
+ 
+ 
 <NotificationModal @ref="notificationModal" />
 <ConfirmModal @ref="confirmModal" Title="Warning"
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
 <HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully."
     ToastType="HandyToastType.SUCCESS" Duration="5" />
-
+ 
 @code {
-
+ 
     private HandyToast handyToast = default!;
     private NotificationModal notificationModal { get; set; }
-
+ 
     private string[] states =
     {
         "Alabama", "Alaska", "American Samoa", "Arizona",
@@ -48,17 +48,17 @@
         "Texas", "Utah", "Vermont", "Virgin Island", "Virginia",
         "Washington", "West Virginia", "Wisconsin", "Wyoming",
     };
-
+ 
     private List<TestClass> TestLst = [
         new TestClass { Id=1, Title = "Title01", Description = "Description01", Descriptions = ["Texas","Utah","Vermont"],},
         new TestClass { Id=2, Title = "Title02", Description = "Description02", Descriptions = [],},
-
+ 
         new TestClass { Id=3, Title = "Title03", Description = "Description03", Descriptions = [],},
         new TestClass { Id=4, Title = "Title04", Description = "Description04", Descriptions = [],},
-
+ 
         new TestClass { Id=5, Title = "Title05", Description = "Description05", Descriptions = [],},
         new TestClass { Id=6, Title = "Title06", Description = "Description06", Descriptions = [],},
-
+ 
         new TestClass { Id=7, Title = "Title07", Description = "Description07", Descriptions = [],},
         new TestClass { Id=8, Title = "Title08", Description = "Description08", Descriptions = [],},
         new TestClass { Id=9, Title = "Title09", Description = "Description09",},
@@ -74,13 +74,13 @@
         new TestClass { Id=19, Title = "Title19", Description = "Description19",},
         new TestClass { Id=20, Title = "Title20", Description = "Description20",},
     ];
-
+ 
     private bool doneLoadingLst = false;
     private ConfirmModal confirmModal = default!;
-
+ 
     private GridStateService handyGridState;
     private List<HandyGridEntity> Items = [];
-
+ 
     protected override void OnInitialized()
     {
         var items = TestLst
@@ -88,20 +88,32 @@
             .OrderBy(item => item.Object.Id)
             .ToList();
         Items = items;
-
-        handyGridState = new(             
+ 
+        handyGridState = new(
             Items: Items,
+            PageSize: 3,
+            CanAddNewItems: true,
+            AddNewItemsText: "Add more stuff",
+            Exportable: true,
+            ExampleFileUploadUrl: "templates/example.csv",
+            IsReadonly: false,
+            ShowRowIndex: true,
+            ShowFilters: true,
+            ColumnsToHide: [],
+            ReadonlyColumns: [nameof(TestClass.Id)],
             OnCreate: async (items) => {
                 Console.WriteLine("added items");
                 // included for showing a real-time change
                 Items.AddRange(items);
+                StateHasChanged();
+                // NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
                 // TODO: apply changes here to db in real-world scenario as well
             },
             OnUpdate: async (item) => {
-                Console.WriteLine("updating items");
-                Console.WriteLine(item.Object);
+                //Console.WriteLine("updating items");
+                //Console.WriteLine(item.Object);
                 // TODO: apply changes here to db in real-world scenario as well
-
+ 
                 // included for showing a real-time change
                 for (int i = 0; i < handyGridState.Items.Count; i++)
                 {
@@ -118,21 +130,31 @@
                         Items[i].Object.PdfUpload = item.Object.PdfUpload;
                     }
                 }
+ 
+                StateHasChanged();
             },
             OnDelete: async (item) => {
-                Console.WriteLine("deleting item");
-
+                //Console.WriteLine("deleting item");
+ 
+                await Task.Delay(1);
+ 
                 // included for showing a real-time change
-                Items.Remove(item);
+                var toDelete = Items.Find(el => el.Object.Id == item.Object.Id);
+                if (toDelete is not null)
+                {
+                    Console.WriteLine(item.Object.Id);
+                    Items.Remove(item);
+                    //Items = Items.Where(el => el.Object.Id != item.Object.Id).ToList();
+                    StateHasChanged();
+                }
                 // TODO: apply changes here to db in real-world scenario as well
-            },
-            ExampleFileUploadUrl: "templates/example.csv",
+            },         
             OnSubmitFile: async (results) => {
                  Console.WriteLine("on submit file!");
                 // triggers a re-render in memory
+                Items.AddRange(results);
+                StateHasChanged();
             },
-            ReadonlyColumns: [nameof(TestClass.Id)],
-            IsReadonly: false,
             EditModeFragments: [
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.Descriptions),
@@ -140,19 +162,19 @@
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.CheckBoxTest),
                     Fragment: o => @<HandyCheckbox TItem="TestClass" Item="o.Object" ColumnName="@(nameof(TestClass.CheckBoxTest))" />),
-
+ 
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.DateTest),
                     Fragment: o => @<HandyDatePicker TItem="TestClass" Item="o.Object" ColumnName="@(nameof(TestClass.DateTest))"/>),
-
+ 
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.DropdownTest),
                     Fragment: o => @<HandyDropdown TItem="TestClass" Item="o.Object" ColumnName="@(nameof(TestClass.DropdownTest))" Style="width: 12rem;" Options="@(["", "a", "b", "c"])"/>),
-
+ 
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.TextAreaTest),
                     Fragment: o => @<HandyTextAreaInput TItem="TestClass" Item="o.Object" ColumnName="@(nameof(TestClass.TextAreaTest))" Style="width: 12rem;"/>),
-
+ 
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.ImageUpload),
                     // create an input file
@@ -164,7 +186,7 @@
                         Accept=".jpg,.png,.JPG,.PNG"
                     />
                 ),
-
+ 
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.PdfUpload),
                     // create an input file
@@ -188,18 +210,19 @@
                     style="color: blue; text-decoration: underline; cursor:pointer;"
                     @onclick="@(() => DownloadPDF(o.Object))" 
                     >View PDF</a>
-                ),
+                )
             ]
+ 
         );
-        
+ 
         doneLoadingLst = true;
     }
-
+ 
     private async Task DownloadPDF(TestClass dto)
     {
         var base64 = Convert.ToBase64String(dto.PdfUpload);
         await jsRuntime.InvokeVoidAsync("downloadFile", base64, "application/pdf", "sample_pdf");
     }
-
-
+ 
+ 
 }
