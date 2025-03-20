@@ -1,0 +1,66 @@
+@using SampleProject.ComponentBases
+@using System.Timers
+
+
+@inherits ModalBase
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="display: block; background: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" @onclick="Cancel"></button>
+            </div>
+            <div class="modal-body">
+                <p class="@ModalClass">@BodyText</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Stay Logged In</button>
+                <button type="button" class="btn btn-primary" @onclick="Confirm">Log Out</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+@code {
+
+    private Timer sessionTimer = null!;
+    private int remainingSeconds;
+
+    [Parameter]
+    public int Seconds { get; set; } = 30;
+
+    private void StopSessionTimer()
+    {
+        sessionTimer?.Stop();
+        sessionTimer?.Dispose();
+    }
+
+    private void OnStartSessionTimer(object sender, ElapsedEventArgs e)
+    {
+        
+        BodyText = (remainingSeconds--).ToString();
+
+        if (remainingSeconds <= 0)
+        {
+            StopSessionTimer();
+        }
+
+        StateHasChanged();
+    }
+
+    public override Task<bool> ShowAsync(string? title=null, string? bodyText=null, HandyModalType? handyModalType=null)
+    {
+        // run timer
+        remainingSeconds = Seconds;
+        BodyText = remainingSeconds.ToString();
+        // 1-second intervals
+        sessionTimer = new Timer(1000);
+        sessionTimer.Elapsed += OnStartSessionTimer!;
+        sessionTimer.Start();
+        return base.ShowAsync();
+    }
+}

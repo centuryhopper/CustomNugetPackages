@@ -4,16 +4,13 @@
 
 
 @*
-
 clear nuget cache if not getting the latest version:
 - dotnet nuget locals all --clear && dotnet remove package HandyBlazorComponents ; dotnet add package HandyBlazorComponents
-
-
 *@
 
 <PageTitle>DEMO</PageTitle>
 
-<div class="m-5">
+<div class="container">
 
     <ul>
         @foreach (var link in ComponentList)
@@ -25,32 +22,16 @@ clear nuget cache if not getting the latest version:
             </li>
         }
     </ul>
-
-    
-    @* <hr> *@
-    
-
-    @* <hr>
-    <div>Number only input demo:</div>
-    <input type="number" class="form-control" style="width: 10rem;" onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57)/* || event.charCode == 45 uncomment to allow negative values*/)">
-
-    <hr> *@
-    @* <div>Dynamic HandyGrid demo:</div>
-
-    @if (doneLoadingLst)
-    {
-        <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="TestClass" Items="TestLst" OnCreate="OnCreate" OnUpdate="OnUpdate" OnDelete="OnDelete" ColumnItems="ColumnItems"/>
-    }
-    else
-    {
-        <span class="spinner-border spinner-border-sm mr-1"></span>
-    } *@
-
 </div>
+
+
+
+
 
 @code {
 
     private (string,string)[] ComponentList = {
+        ("session-timer-demo", "Session Timer Demo"),
         ("confirm-modal-demo", "Confirm Modal Demo"),
         ("notification-demo", "Notification Popup Demo"),
         ("toast-demo", "Toast Popup Demo"),

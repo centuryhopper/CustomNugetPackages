@@ -1,0 +1,63 @@
+using HandyBlazorComponents.Models;
+using Microsoft.AspNetCore.Components;
+
+namespace SampleProject.ComponentBases;
+
+public class ModalBase : ComponentBase
+{
+    protected bool IsVisible { get; set; }
+    protected TaskCompletionSource<bool>? TaskCompletionSource;
+    protected string ModalClass = string.Empty;
+    [Parameter] public string Title { get; set; } = "Confirmation";
+    [Parameter] public string BodyText { get; set; } = "Are you sure?";
+    [Parameter] public HandyModalType HandyModalType { get; set; } = HandyModalType.INFO;
+    public virtual Task<bool> ShowAsync(string? title=null, string? bodyText=null, HandyModalType? chosenModalType=null)
+    {
+        // prioritize user passed in parameters over component parameters
+        if (chosenModalType is not null)
+        {
+            HandyModalType = chosenModalType.Value;
+        }
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            Title = title;
+        }
+        if (!string.IsNullOrWhiteSpace(bodyText))
+        {
+            BodyText = bodyText;
+        }
+        SetModalClass(HandyModalType);
+        IsVisible = true;
+        TaskCompletionSource = new TaskCompletionSource<bool>();
+        StateHasChanged();
+        return TaskCompletionSource.Task;
+    }
+
+    protected virtual void Confirm()
+    {
+        IsVisible = false;
+        TaskCompletionSource?.SetResult(true);
+        StateHasChanged();
+    }
+
+    protected virtual void Cancel()
+    {
+        TaskCompletionSource?.SetResult(false);
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    private void SetModalClass(HandyModalType modalType)
+    {
+        ModalClass = modalType switch
+        {
+            HandyModalType.SUCCESS => "text-success",
+            HandyModalType.WARNING => "text-warning",
+            HandyModalType.ERROR => "text-danger",
+            HandyModalType.INFO => "text-info",
+            // default to text-info
+            _ => "text-info"
+        };
+    }
+}
+
