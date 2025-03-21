@@ -11,21 +11,21 @@ public class ModalBase : ComponentBase
     [Parameter] public string Title { get; set; } = "Confirmation";
     [Parameter] public string BodyText { get; set; } = "Are you sure?";
     [Parameter] public HandyModalType HandyModalType { get; set; } = HandyModalType.INFO;
-    public virtual Task<bool> ShowAsync(string? title=null, string? bodyText=null, HandyModalType? chosenModalType=null)
+    public virtual Task<bool> ShowAsync(string title, string bodyText, HandyModalType chosenModalType)
     {
         // prioritize user passed in parameters over component parameters
-        if (chosenModalType is not null)
-        {
-            HandyModalType = chosenModalType.Value;
-        }
-        if (!string.IsNullOrWhiteSpace(title))
-        {
-            Title = title;
-        }
-        if (!string.IsNullOrWhiteSpace(bodyText))
-        {
-            BodyText = bodyText;
-        }
+        HandyModalType = chosenModalType;
+        Title = title;
+        BodyText = bodyText;
+        SetModalClass(HandyModalType);
+        IsVisible = true;
+        TaskCompletionSource = new TaskCompletionSource<bool>();
+        StateHasChanged();
+        return TaskCompletionSource.Task;
+    }
+
+    public virtual Task<bool> ShowAsync()
+    {
         SetModalClass(HandyModalType);
         IsVisible = true;
         TaskCompletionSource = new TaskCompletionSource<bool>();

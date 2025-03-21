@@ -20,6 +20,8 @@
     private int remainingSeconds;
     private bool isCoolingDown;
     private int submissionCount;
+    public bool IsCoolingDown => isCoolingDown;
+
 
     public void IncrementSubmissionCount()
     {
@@ -75,5 +77,4 @@
         StopCooldown();
     }
 
-    public bool IsCoolingDown => isCoolingDown;
 }

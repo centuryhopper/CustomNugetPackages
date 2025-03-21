@@ -1,12 +1,11 @@
 @using SampleProject.ComponentBases
-@using System.Timers
-
+@inject IJSRuntime jsRuntime
+@inject NavigationManager NavigationManager
 
 @inherits ModalBase
 
-@if (IsVisible)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="display: block; background: rgba(0, 0, 0, 0.5);">
+
+<div id="session_timer_modal" class="modal fade @(IsVisible ? "show d-block" : "")" tabindex="-1" style="display: block; background: rgba(0, 0, 0, 0.5);">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -14,7 +13,7 @@
                 <button type="button" class="btn-close" @onclick="Cancel"></button>
             </div>
             <div class="modal-body">
-                <p class="@ModalClass">@BodyText</p>
+                <p id="session_timer_modal_body" class="@ModalClass">@BodyText</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @onclick="Cancel">Stay Logged In</button>
@@ -23,44 +22,51 @@
         </div>
     </div>
 </div>
-}
+
+<SessionExpiredModal @ref="sessionExpiredModal" Title="Notice" BodyText="Sorry. Your session has Expired." Callback="@(() => {
+    //Console.WriteLine("SessionExpiredModal callback invoked!");
+    NavigationManager.NavigateTo(string.IsNullOrWhiteSpace(FallBackURL) ? NavigationManager.BaseUri : FallBackURL, forceLoad: true);
+})"/>
+
 
 @code {
 
-    private Timer sessionTimer = null!;
-    private int remainingSeconds;
+    private SessionExpiredModal sessionExpiredModal = default!;
 
     [Parameter]
-    public int Seconds { get; set; } = 30;
+    public int Seconds { get; set; } = 5;
+    [Parameter]
+    public string JWT_TOKEN_NAME {get;set;} = string.Empty;
+    [Parameter]
+    public string FallBackURL {get;set;} = string.Empty;
 
-    private void StopSessionTimer()
+    protected override void Cancel()
     {
-        sessionTimer?.Stop();
-        sessionTimer?.Dispose();
+        Console.WriteLine("staying logged in");
+        base.Cancel();
     }
-
-    private void OnStartSessionTimer(object sender, ElapsedEventArgs e)
+    protected override async void Confirm()
     {
-        
-        BodyText = (remainingSeconds--).ToString();
-
-        if (remainingSeconds <= 0)
+        Console.WriteLine("confirming!");
+        // remove the jwt
+        if (!string.IsNullOrWhiteSpace(JWT_TOKEN_NAME))
         {
-            StopSessionTimer();
+            var value = await jsRuntime.InvokeAsync<string?>("localStorage.getItem", JWT_TOKEN_NAME);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                await jsRuntime.InvokeVoidAsync("localStorage.removeItem", JWT_TOKEN_NAME);
+            }
         }
 
-        StateHasChanged();
+        // await Task.Delay(5000);
+        // show session expired popup
+        await sessionExpiredModal.ShowAsync();
+        base.Confirm();
     }
 
-    public override Task<bool> ShowAsync(string? title=null, string? bodyText=null, HandyModalType? handyModalType=null)
+    [JSInvokable]
+    public override Task<bool> ShowAsync()
     {
-        // run timer
-        remainingSeconds = Seconds;
-        BodyText = remainingSeconds.ToString();
-        // 1-second intervals
-        sessionTimer = new Timer(1000);
-        sessionTimer.Elapsed += OnStartSessionTimer!;
-        sessionTimer.Start();
         return base.ShowAsync();
     }
 }

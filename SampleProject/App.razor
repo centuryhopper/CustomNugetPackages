@@ -1,4 +1,5 @@
-﻿<Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+﻿@using SampleProject.TestComponents
+<Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -12,7 +13,7 @@
 </Router>
 
 
-<NavigationChecker IsPageDirty="IsPageDirty" Seconds="@(30 * 60)"/>
+<NavigationCheckerTest IsPageDirty="IsPageDirty" Seconds="@(5)"/>
 
 
 @code {
