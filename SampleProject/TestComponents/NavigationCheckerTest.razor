@@ -44,16 +44,17 @@ OnBeforeInternalNavigation="@(async (LocationChangingContext context) => {
         await Task.Delay(1);
     }
  
-    [JSInvokable]
-    public async Task StayLoggedIn()
-    {
-        await jsRuntime.InvokeVoidAsync("TEST_FUNCTIONS.startIdleTimer", DotNetObjectReference.Create(this), string.IsNullOrWhiteSpace(FallBackURL) ? NavigationManager.BaseUri : FallBackURL, Seconds * 1000);
-    }
+    //[JSInvokable]
+    //public async Task StayLoggedIn()
+    //{
+    //    await jsRuntime.InvokeVoidAsync("TEST_FUNCTIONS.startIdleTimer", DotNetObjectReference.Create(this), string.IsNullOrWhiteSpace(FallBackURL) ? NavigationManager.BaseUri : FallBackURL, Seconds * 1000);
+    //}
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await jsRuntime.InvokeVoidAsync("localStorage.setItem", JWT_TOKEN_EXP_DATE, new DateTimeOffset(DateTime.Now.AddSeconds(5)).ToUnixTimeMilliseconds());
+            await jsRuntime.InvokeVoidAsync("localStorage.setItem", JWT_TOKEN_EXP_DATE, new DateTimeOffset(DateTime.Now.AddSeconds(35)).ToUnixTimeMilliseconds());
             await jsRuntime.InvokeVoidAsync("TEST_FUNCTIONS.checkExpiry", DotNetObjectReference.Create(this), string.IsNullOrWhiteSpace(FallBackURL) ? NavigationManager.BaseUri : FallBackURL, 0, 1, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE);
  
             // 30 minutes to milliseconds

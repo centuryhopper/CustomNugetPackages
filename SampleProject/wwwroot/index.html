@@ -34,7 +34,7 @@
 
         TEST_FUNCTIONS = {
 
-            checkExpiry: (navigationCheckerHelper, basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE) =>
+            checkExpiry: (dotNetObject, basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE) =>
             {
                 let jwtTimeout = null;
                 let idleTimer = null;
@@ -46,10 +46,11 @@
                     clearTimeout(idleTimer);
                 }
 
-                function showSessionExpiredPopup(msg)
+                async function showSessionExpiredPopup(msg)
                 {
                     localStorage.removeItem(JWT_TOKEN_NAME)
-                    navigationCheckerHelper.invokeMethodAsync("RedirectUser")
+                    localStorage.removeItem(JWT_TOKEN_EXP_DATE)
+                    await dotNetObject.invokeMethodAsync("RedirectUser")
                     swal.fire({
                         title: "Notice",
                         html: `${msg}`,
@@ -71,11 +72,11 @@
                     // avoid checking for jwt expiring when modal is up
                     if (swal.isVisible())
                     {
-                        console.log("sweet alert pop up is open");
+                        //console.log("sweet alert pop up is open");
                         return
                     }
                     let storedTimestamp = localStorage.getItem(JWT_TOKEN_EXP_DATE);
-                    console.log('storedTimestamp: ' + storedTimestamp);
+                    //console.log('storedTimestamp: ' + storedTimestamp);
                     if (!storedTimestamp)
                     {
                         // If there's no session expiration data, recheck in 10 seconds
@@ -92,6 +93,7 @@
                         // console.log('session expired');
                         // Redirect to session expired page
                         resetAllTimers()
+                        //console.log('token expired');
                         showSessionExpiredPopup('Your token has Expired.')
                     }
                     else
@@ -153,9 +155,8 @@
                                         countdownEl.innerText = timeLeftInSeconds;
                                         if (timeLeftInSeconds <= 0)
                                         {
-                                            clearInterval(countDownInterval);
-                                            // console.log('time ran out');
                                             swal.close();
+                                            resetAllTimers()
                                             showSessionExpiredPopup('Your session has Expired.')
                                         }
                                     }, 1000);
@@ -224,7 +225,7 @@
                         monitorJwtToken()
                         break
                     case 2:
-                        startIdleTimer(navigationCheckerHelper, basePath, idleTimeOut)
+                        startIdleTimer(dotNetObject, basePath, idleTimeOut)
                         break
                 }
             },
