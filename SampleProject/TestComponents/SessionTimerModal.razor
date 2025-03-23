@@ -1,4 +1,5 @@
 @using SampleProject.ComponentBases
+@using System.Timers
 @inject IJSRuntime jsRuntime
 @inject NavigationManager NavigationManager
 
@@ -23,50 +24,48 @@
     </div>
 </div>
 
-<SessionExpiredModal @ref="sessionExpiredModal" Title="Notice" BodyText="Sorry. Your session has Expired." Callback="@(() => {
-    //Console.WriteLine("SessionExpiredModal callback invoked!");
-    NavigationManager.NavigateTo(string.IsNullOrWhiteSpace(FallBackURL) ? NavigationManager.BaseUri : FallBackURL, forceLoad: true);
-})"/>
-
 
 @code {
 
-    private SessionExpiredModal sessionExpiredModal = default!;
+    private Timer SessionTimer;
 
-    [Parameter]
-    public int Seconds { get; set; } = 5;
-    [Parameter]
-    public string JWT_TOKEN_NAME {get;set;} = string.Empty;
-    [Parameter]
-    public string FallBackURL {get;set;} = string.Empty;
+    protected override void OnInitialized()
+    {
+        SessionTimer = new Timer(1000);
+        SessionTimer.Elapsed += OnSessionTimerElapsed!;
+    }
 
-    protected override void Cancel()
+    private void OnSessionTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        
+    }
+
+    [JSInvokable]
+    public override void Cancel()
     {
         Console.WriteLine("staying logged in");
         base.Cancel();
     }
-    protected override async void Confirm()
+
+    [JSInvokable]
+    public void HitConfirm()
     {
         Console.WriteLine("confirming!");
-        // remove the jwt
-        if (!string.IsNullOrWhiteSpace(JWT_TOKEN_NAME))
-        {
-            var value = await jsRuntime.InvokeAsync<string?>("localStorage.getItem", JWT_TOKEN_NAME);
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                await jsRuntime.InvokeVoidAsync("localStorage.removeItem", JWT_TOKEN_NAME);
-            }
-        }
-
-        // await Task.Delay(5000);
-        // show session expired popup
-        await sessionExpiredModal.ShowAsync();
         base.Confirm();
     }
+
+    [JSInvokable]
+    public bool IsModalVisible() => IsVisible;
 
     [JSInvokable]
     public override Task<bool> ShowAsync()
     {
         return base.ShowAsync();
+    }
+
+    [JSInvokable]
+    public Task<bool> ShowAsyncWithParams(string title, string bodyText, HandyModalType HandyModalType=HandyModalType.WARNING)
+    {
+        return base.ShowAsync(title, bodyText, HandyModalType);
     }
 }

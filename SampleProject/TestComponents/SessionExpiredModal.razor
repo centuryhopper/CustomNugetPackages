@@ -23,7 +23,16 @@
     [Parameter]
     public EventCallback Callback {get;set;}
 
-    protected override async void Cancel()
+    [JSInvokable]
+    public override Task<bool> ShowAsync()
+    {
+        return base.ShowAsync();
+    }
+
+    [JSInvokable]
+    public bool IsModalVisible() => IsVisible;
+
+    public override async void Cancel()
     {
         base.Cancel();
         await Callback.InvokeAsync();

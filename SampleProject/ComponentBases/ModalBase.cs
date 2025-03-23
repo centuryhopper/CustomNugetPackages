@@ -33,14 +33,14 @@ public class ModalBase : ComponentBase
         return TaskCompletionSource.Task;
     }
 
-    protected virtual void Confirm()
+    public virtual void Confirm()
     {
         IsVisible = false;
         TaskCompletionSource?.SetResult(true);
         StateHasChanged();
     }
 
-    protected virtual void Cancel()
+    public virtual void Cancel()
     {
         TaskCompletionSource?.SetResult(false);
         IsVisible = false;
