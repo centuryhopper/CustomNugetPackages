@@ -5,6 +5,7 @@
 @using System.Linq.Expressions
 @using HandyBlazorComponents.Abstracts
 @using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Components.HandyGridTools
  
 
 @* This grid has pagination and filtering and sorting along with all CRUD operations *@
@@ -177,7 +178,7 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         }
         @if (HandyGridState.Exportable)
         {
-            <button class="btn btn-info m-1" @onclick="ExportTableAsCsv">Export Table as CSV</button>
+            <SaveAsFileComponent Contents="@(ConvertToCSV())"/>
         }
     </div>
     <div>
@@ -479,26 +480,25 @@ BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIB
         return sortColumn == columnName ? (sortAscending ? "↑" : "↓") : string.Empty; // Return an up or down arrow based on
     }
  
-    private async Task ExportTableAsCsv()
+    private string ConvertToCSV()
     {
         var result = string.Join(",", HandyGridState.Columns);
         result += '\n';
         // Console.WriteLine(result);
         foreach (var acc in HandyGridState.Items)
         {
-            List<string> stringified = [];
-            foreach (var col in HandyGridState.Columns)
-            {
-                var item = acc.DisplayPropertyInGrid(col)?.ToString()?.Replace(",", "+");
-                stringified.Add(item ?? string.Empty);
-            }
+            //List<string> stringified = [];
+            //foreach (var col in HandyGridState.Columns)
+            //{
+            //    var item = acc.DisplayPropertyInGrid(col)?.ToString()?.Replace(",", "+");
+            //    stringified.Add(item ?? string.Empty);
+            //}
  
-            // var stringified = HandyGridState.Columns.Select(col => acc.DisplayPropertyInGrid(col).ToString()?.Replace(",", "+"));
- 
+            var stringified = HandyGridState.Columns.Select(col => acc.DisplayPropertyInGrid(col).ToString()?.Replace(",", "+"));
             var list = stringified.ToList();
             result += $"{string.Join(",", list)}\n";
         }
-        await jsRuntime.InvokeVoidAsync("saveAsFile", "data.csv", result);
+        return result;
     }
  
 }

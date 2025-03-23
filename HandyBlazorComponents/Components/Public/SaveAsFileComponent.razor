@@ -1,0 +1,27 @@
+<button class="@Style" @onclick="SaveAsFile">
+    @Text
+</button>
+
+
+@code {
+
+    [Parameter]
+    public string Text { get; set; } = "Export as CSV";
+
+    [Parameter]
+    public string Style { get; set; } = "btn btn-info m-1";
+
+    [Parameter]
+    public string Contents { get; set; } = string.Empty;
+    [Parameter]
+    public string FileName { get; set; } = "data.csv";
+
+    private async Task SaveAsFile()
+    {
+        if (string.IsNullOrWhiteSpace(Contents))
+        {
+            return;
+        }
+        await jsRuntime.InvokeVoidAsync("FILE.saveAsFile", "data.csv", Contents);
+    }
+}

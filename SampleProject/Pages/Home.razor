@@ -31,7 +31,7 @@ clear nuget cache if not getting the latest version:
 @code {
 
     private (string,string)[] ComponentList = {
-        ("session-timer-demo", "Session Timer Demo"),
+        // ("session-timer-demo", "Session Timer Demo"),
         ("confirm-modal-demo", "Confirm Modal Demo"),
         ("notification-demo", "Notification Popup Demo"),
         ("toast-demo", "Toast Popup Demo"),
@@ -39,6 +39,15 @@ clear nuget cache if not getting the latest version:
         ("cooldowntimer-demo", "Cooldown Timer Demo"),
         ("dynamichandygrid-demo", "Dynamic Handy Grid Demo"),
     };
+
+    // test out jwt token expiring
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    if (firstRender)
+    //    {
+    //        await jsRuntime.InvokeVoidAsync("localStorage.setItem", "expDate", new DateTimeOffset(DateTime.Now.AddSeconds(5)).ToUnixTimeMilliseconds());
+    //    }
+    //}
 
 
 

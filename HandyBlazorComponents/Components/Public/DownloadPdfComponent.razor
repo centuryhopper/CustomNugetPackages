@@ -1,0 +1,28 @@
+<a style="@Style"
+    @onclick="@Download" 
+    >@LinkText</a>
+
+
+@code {
+
+    [Parameter]
+    public string LinkText {get;set;} = "View PDF";
+
+    [Parameter]
+    public string Style {get;set;} = "color: blue; text-decoration: underline; cursor:pointer;";
+
+    [Parameter]
+    public byte[]? Contents {get;set;}
+    [Parameter]
+    public string NameForDownloadedPdf {get;set;} = "sample_pdf";
+
+    private async Task Download()
+    {
+        if (Contents is null)
+        {
+            return;
+        }
+        var base64 = Convert.ToBase64String(Contents);
+        await jsRuntime.InvokeVoidAsync("FILE.downloadFile", base64, "application/pdf", NameForDownloadedPdf);
+    }
+}

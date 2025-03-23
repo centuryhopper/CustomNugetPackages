@@ -1,8 +1,7 @@
 @page "/notification-demo"
-@using SampleProject.TestComponents
 
 
-<NotificationModalTest @ref="notif" BodyText="This is an info pop up" Title="Info"/>
+<NotificationModal @ref="notif" BodyText="This is an info pop up" Title="Info"/>
 
 <label>Notification Modal demo:</label>
     <div class="row">
@@ -37,5 +36,5 @@
     </div>
 
 @code {
-    private NotificationModalTest notif = default!;
+    private NotificationModal notif = default!;
 }

@@ -2,6 +2,7 @@
 @using Client.Models
 @using Client.Services
 @using HandyBlazorComponents.Abstracts
+@using HandyBlazorComponents.Components.HandyGridTools
 @* @using SampleProject.TestComponents *@
  
  
@@ -206,10 +207,7 @@
                 ),
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.PdfUpload),
-                    Fragment: o => o.Object.PdfUpload is null ? @<span>No pdf was added for this record</span> : @<a 
-                    style="color: blue; text-decoration: underline; cursor:pointer;"
-                    @onclick="@(() => DownloadPDF(o.Object))" 
-                    >View PDF</a>
+                    Fragment: o => o.Object.PdfUpload is null ? @<span>No pdf was added for this record</span> : @<DownloadPdfComponent Contents="o.Object.PdfUpload" />
                 )
             ]
  
@@ -218,11 +216,6 @@
         doneLoadingLst = true;
     }
  
-    private async Task DownloadPDF(TestClass dto)
-    {
-        var base64 = Convert.ToBase64String(dto.PdfUpload);
-        await jsRuntime.InvokeVoidAsync("downloadFile", base64, "application/pdf", "sample_pdf");
-    }
  
  
 }

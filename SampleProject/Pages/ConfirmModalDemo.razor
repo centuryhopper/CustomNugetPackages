@@ -1,7 +1,6 @@
 @page "/confirm-modal-demo"
-@using SampleProject.TestComponents
 
-<ConfirmModalTest @ref="confirmModal" Title="Warning"
+<ConfirmModal @ref="confirmModal" Title="Warning"
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" HandyModalType="HandyModalType.INFO"/>
 
 <label>Confirmation Modal Demo:</label>
@@ -12,7 +11,7 @@
 
 
 @code {
-    private ConfirmModalTest confirmModal = default!;
+    private ConfirmModal confirmModal = default!;
     private string Message { get; set; } = "";
 
     private async Task ConfirmButton()
