@@ -1,5 +1,4 @@
-﻿@* @using SampleProject.TestComponents *@
-
+﻿
 <Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -14,20 +13,14 @@
 </Router>
 
 
-<NavigationChecker IsPageDirty="IsPageDirty" Seconds="30"/>
+
+<NavigationChecker Seconds="@(30 * 60)"/>
 
 
 @code {
-    private bool IsPageDirty = false;
-    public void SetFormDirtyState(bool isDirty)
-    {
-        IsPageDirty = isDirty;
-        StateHasChanged();
-    }
-
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        // reset page dirtiness on each new page
-        IsPageDirty = false;
+        // reset forms that were dirty
+        await jsRuntime.InvokeVoidAsync("resetBeforeUnloads");
     }
 }

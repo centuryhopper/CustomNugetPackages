@@ -31,7 +31,7 @@
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/HandyBlazorComponents/handyBlazorComponents.js"></script>
     <script>
-
+        
         function downloadFile(base64Data, contentType, fileName) {
             const blob = new Blob([Uint8Array.from(atob(base64Data), c => c.charCodeAt(0))], { type: contentType });
             const url = URL.createObjectURL(blob);

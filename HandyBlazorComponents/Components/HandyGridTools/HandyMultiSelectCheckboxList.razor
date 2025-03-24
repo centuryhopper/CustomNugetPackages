@@ -49,7 +49,7 @@
     {
         if (firstRender)
         {
-            await jsRuntime.InvokeVoidAsync("dropdownInterop.registerEscapeKeyHandler", DotNetObjectReference.Create(this));
+            await jsRuntime.InvokeVoidAsync("UI.registerEscapeKeyHandler", DotNetObjectReference.Create(this));
         }
     }
 

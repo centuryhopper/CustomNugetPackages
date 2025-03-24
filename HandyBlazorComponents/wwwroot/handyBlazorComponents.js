@@ -1,7 +1,74 @@
+// javascript key concept:
+// var ignores blocked scopes and has hoisting
+// let is block scoped and has no hoisting
+// const is block scoped and has no hoisting
+// var is global, let is local
 
+
+function resetBeforeUnloads() {
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+}
+
+function handleBeforeUnload(event) {
+    event.preventDefault();
+    event.returnValue = '';
+}
+
+
+FORM_HANDLING = {
+    
+    getForms: () =>
+    {
+        let forms = document.querySelectorAll('form')
+        //console.log(forms);
+        function trackFormDirtiness(form)
+        {
+            let isDirty = false;
+            const initialValues = {};
+        
+            // Store initial values
+            Array.from(form.elements).forEach(element => {
+            if (element.name) {
+                initialValues[element.name] = element.value;
+            }
+            });
+        
+            // Input change handler
+            function checkDirty() {
+            isDirty = Array.from(form.elements).some(element => {
+                return element.value !== initialValues[element.name];
+            });
+    
+            console.log('isDirty: '+isDirty);
+    
+            
+            if (isDirty) {
+                window.addEventListener('beforeunload', handleBeforeUnload);
+            } else {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+            }
+            }
+        
+            form.addEventListener('input', ()=>{
+                checkDirty()
+            });
+            form.addEventListener('submit', () => {
+                isDirty = false
+                resetBeforeUnloads()
+            });
+        }
+        
+        
+        forms.forEach(f => {
+            trackFormDirtiness(f)
+        })
+    }
+
+}
 
 SESSION_FUNCTIONS = {
-    checkExpiry: (dotNetObject, basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE) =>
+    
+    run: (basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE) =>
     {
         let jwtTimeout = null;
         let idleTimer = null;
@@ -13,11 +80,11 @@ SESSION_FUNCTIONS = {
             clearTimeout(idleTimer);
         }
 
-        async function showSessionExpiredPopup(msg)
+        function showSessionExpiredPopup(msg)
         {
             localStorage.removeItem(JWT_TOKEN_NAME)
             localStorage.removeItem(JWT_TOKEN_EXP_DATE)
-            await dotNetObject.invokeMethodAsync("RedirectUser")
+            resetBeforeUnloads()
             swal.fire({
                 title: "Notice",
                 html: `${msg}`,
@@ -73,7 +140,7 @@ SESSION_FUNCTIONS = {
         }
 
         function startIdleTimer (timeout)
-        {         
+        {
             // give one minute warning
             /*
                 timeout - warningtime = 60000
@@ -85,8 +152,8 @@ SESSION_FUNCTIONS = {
                     warningTime = timeout - 10000
             */
 
-            // make sure we have at least 30 seconds to deal with
-            timeout = Math.max(30000, timeout)
+            // make sure we have at least 10 seconds to deal with
+            timeout = Math.max(15000, timeout)
             // 5 minutes
             const SESSION_DISPLAY_TIME_IN_MILLISECONDS = 300000
             const warningTime = timeout > SESSION_DISPLAY_TIME_IN_MILLISECONDS ? SESSION_DISPLAY_TIME_IN_MILLISECONDS : timeout - 10000
@@ -196,17 +263,17 @@ SESSION_FUNCTIONS = {
 }
 
 
-// closes the multiselect when user presses escape
-window.dropdownInterop = {
-    registerEscapeKeyHandler: function (dotNetObject) {
+UI = {
+    // closes the multiselect when user presses escape
+    registerEscapeKeyHandler: (dotNetObject) => {
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 console.log('escape pressed');
-                dotNetObject.invokeMethodAsync('CloseDropdown');
+                dotNetObject.invokeMethod('CloseDropdown');
             }
         });
-    }
-};
+    },
+}
 
 FILE = {
     downloadFile: (base64Data, contentType, fileName) => {

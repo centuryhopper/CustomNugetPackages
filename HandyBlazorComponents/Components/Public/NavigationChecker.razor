@@ -1,33 +1,6 @@
-@using Microsoft.AspNetCore.Components.Routing
-@inject NavigationManager NavigationManager
- 
-@* ConfirmExternalNavigation="IsPageDirty" must set like this so that reloading page doesn't show navigation popup unless page is dirty *@
-<NavigationLock ConfirmExternalNavigation="IsPageDirty" 
-OnBeforeInternalNavigation="@(async (LocationChangingContext context) => {
-    // If navigation is triggered due to idle timeout, allow it
-    if (IsIdleRedirect)
-    {
-        return; // Allow navigation
-    }
-    if (IsPageDirty)
-    {
-        var isConfirmed = await jsRuntime.InvokeAsync<bool>("confirm", 
-            "Are you sure you want to leave? You have made changes to this page that are not saved");
- 
-        if (!isConfirmed)
-        {
-            context.PreventNavigation();
-        }
-    }
-})" />
-
-
  
  
 @code {
-    private bool IsIdleRedirect = false;
-    [Parameter]
-    public bool IsPageDirty {get;set;} = false;
     [Parameter]
     public int Seconds { get;set; } = 30;
     [Parameter]
@@ -35,16 +8,7 @@ OnBeforeInternalNavigation="@(async (LocationChangingContext context) => {
     [Parameter]
     public string JWT_TOKEN_EXP_DATE {get;set;} = "expDate";
     [Parameter]
-    public string FallBackURL {get;set;} = string.Empty;
-
- 
-    [JSInvokable]
-    public async void RedirectUser()
-    {
-        IsIdleRedirect = true; // Set flag to bypass NavigationLock
-        // small delay before navigating so that IsIdleRedirect is true when OnBeforeInternalNavigation is called
-        await Task.Delay(1);
-    }
+    public string ReturnUrl {get;set;} = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -52,10 +16,10 @@ OnBeforeInternalNavigation="@(async (LocationChangingContext context) => {
         {
             // test run of adding a dummy timestamp
             // await jsRuntime.InvokeVoidAsync("localStorage.setItem", JWT_TOKEN_EXP_DATE, new DateTimeOffset(DateTime.Now.AddSeconds(55)).ToUnixTimeMilliseconds());
-            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.checkExpiry", DotNetObjectReference.Create(this), string.IsNullOrWhiteSpace(FallBackURL) ? NavigationManager.BaseUri : FallBackURL, 0, 1, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE);
+            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.run", string.IsNullOrWhiteSpace(ReturnUrl) ? NavigationManager.BaseUri : ReturnUrl, 0, 1, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE);
  
             // converted seconds to milliseconds by multiplying by 1000
-            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.checkExpiry", DotNetObjectReference.Create(this), string.IsNullOrWhiteSpace(FallBackURL) ? NavigationManager.BaseUri : FallBackURL, Seconds * 1000, 2, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE);
+            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.run", string.IsNullOrWhiteSpace(ReturnUrl) ? NavigationManager.BaseUri : ReturnUrl, Seconds * 1000, 2, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE);
         }
     }
 }

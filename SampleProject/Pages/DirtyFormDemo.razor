@@ -1,0 +1,93 @@
+@page "/dirty-form-demo"
+
+@using System.ComponentModel.DataAnnotations
+@using HandyBlazorComponents.Components
+@using HandyBlazorComponents.Models
+@using Microsoft.AspNetCore.Authorization
+@using System.IO
+
+@implements IDisposable
+ 
+<h1 class="text-center">Dirty Form Demo</h1>
+ 
+<button @onclick="@(()=>NavigationManager.NavigateTo(NavigationManager.BaseUri, forceLoad: true))" class="btn btn-primary m-5">Back to Home</button>
+
+<div class="container">
+    @if (TestClass is not null)
+    {
+        <EditForm id="test_form" EditContext="@EditContext" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            @* <ValidationSummary /> *@
+        
+            <div class="overflow-auto p-5">
+                <div class="form-outline m-3">
+                    <label class="form-label">Title</label>
+                    <InputText @bind-Value="TestClass.Title" class="form-control" />
+                    <ValidationMessage For="@(() => TestClass.Title)" />
+                </div>
+
+                <div class="form-outline m-3">
+                    <label class="form-label">Description</label>
+                    <InputText @bind-Value="TestClass.Description" class="form-control" />
+                    <ValidationMessage For="@(() => TestClass.Description)" />
+                </div>
+        
+                <button type="submit" disabled="@isLoading" class="btn btn-success m-3">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-1"></span>
+                    }
+                    Save
+                </button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+<HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully."
+ToastType="HandyToastType.SUCCESS" Duration="5" />
+
+<HandyFormTracker />
+
+@code {
+    private HandyToast handyToast = default!;
+    private bool isLoading = false;
+    private EditContext EditContext;
+
+    private TestClass TestClass { get; set; } = new();
+ 
+
+    private async void HandleFieldChanged(object sender, FieldChangedEventArgs e)
+    {
+        Console.WriteLine("changed field");
+        // Refresh UI
+        StateHasChanged();
+    }
+ 
+    public void Dispose()
+    {
+        if (EditContext is not null)
+        {
+            EditContext.OnFieldChanged -= HandleFieldChanged; // Cleanup event
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Console.WriteLine(NewBrochureDTO is null);
+        EditContext = new(TestClass);
+        EditContext.OnFieldChanged += HandleFieldChanged;
+    }
+ 
+    // Handle form submit
+    private async Task HandleValidSubmit()
+    {
+        // make a mock api call
+        await Task.Delay(1000);
+ 
+        _ = handyToast.ShowToastAsync("Success", "Submission Successful!", HandyToastType.SUCCESS);
+        TestClass = new();
+    }
+
+    
+}
