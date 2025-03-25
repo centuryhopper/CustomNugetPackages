@@ -2,7 +2,7 @@ global using CsvHelper.Configuration;
 using Client.Models;
 using Client.Services;
 using HandyBlazorComponents.Abstracts;
-
+using HandyBlazorComponents.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SampleProject;
@@ -20,5 +20,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // builder.Services.AddSingleton<HandyGridStateAbstract<HandyGridEntity, TestClass>, GridStateService>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+builder.Services.AddHandyBlazorServices();
 
 await builder.Build().RunAsync();

@@ -49,7 +49,11 @@ ToastType="HandyToastType.SUCCESS" Duration="5" />
 
 <HandyFormTracker />
 
+
+
 @code {
+    [CascadingParameter(Name = nameof(NavigationChecker))]
+    public NavigationChecker NavigationChecker {get;set;}
     private HandyToast handyToast = default!;
     private bool isLoading = false;
     private EditContext EditContext;
@@ -59,7 +63,8 @@ ToastType="HandyToastType.SUCCESS" Duration="5" />
 
     private async void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
-        Console.WriteLine("changed field");
+        // Console.WriteLine("changed field");
+        NavigationChecker.SetPageDirtyValue(true);
         // Refresh UI
         StateHasChanged();
     }

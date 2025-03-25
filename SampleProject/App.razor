@@ -1,26 +1,26 @@
 ﻿
-<Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+<CascadingValue Value="navigationChecker" Name="@nameof(NavigationChecker)">
+    <Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingValue>
 
-
-
-<NavigationChecker Seconds="@(30 * 60)"/>
-
+<NavigationChecker @ref="navigationChecker" Seconds="@(30 * 60)"/>
 
 @code {
+    private NavigationChecker navigationChecker = default!;
     private async Task OnNavigateAsync(NavigationContext args)
     {
-        // reset forms that were dirty
-        await jsRuntime.InvokeVoidAsync("resetBeforeUnloads");
+        navigationChecker.SetPageDirtyValue(false);
+        await HandyBlazorService.ResetFormStates();
     }
 }

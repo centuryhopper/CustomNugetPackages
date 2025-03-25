@@ -39,7 +39,7 @@ FORM_HANDLING = {
                 return element.value !== initialValues[element.name];
             });
     
-            console.log('isDirty: '+isDirty);
+            // console.log('isDirty: '+isDirty);
     
             
             if (isDirty) {
@@ -268,7 +268,7 @@ UI = {
     registerEscapeKeyHandler: (dotNetObject) => {
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
-                console.log('escape pressed');
+                // console.log('escape pressed');
                 dotNetObject.invokeMethod('CloseDropdown');
             }
         });
