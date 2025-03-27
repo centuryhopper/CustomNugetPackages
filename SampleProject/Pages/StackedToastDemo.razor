@@ -1,6 +1,6 @@
 @page "/stacked-toast-demo"
 
-<StackedHandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." Position="HandyToastPosition.CENTER_ALIGN"/>
+<StackedHandyToast @ref="stackedHandyToast" Title="Success" Message="Your operation completed successfully." Position="HandyToastPosition.CENTER_ALIGN"/>
 
 <label>Stacked Toast demo:</label>
 <div class="row">
@@ -27,11 +27,11 @@
 </div>
 
 @code {
-    private StackedHandyToast handyToast = default!;
+    private StackedHandyToast stackedHandyToast = default!;
 
     private async Task ShowToastAsync(string Title, string Message, HandyToastType? handyToastType)
     {
-        _ = handyToast.ShowToastAsync(Title, Message, handyToastType);
+        _ = stackedHandyToast.ShowToastAsync(Title, Message, handyToastType);
     }
 
 }

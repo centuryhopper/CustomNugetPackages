@@ -134,7 +134,7 @@ SESSION_FUNCTIONS = {
                     warningTime = timeout - 10000
             */
 
-      // make sure we have at least 10 seconds to deal with
+      // make sure we have at least 15 seconds to deal with
       timeout = Math.max(15000, timeout);
       // 5 minutes
       const SESSION_DISPLAY_TIME_IN_MILLISECONDS = 300000;
