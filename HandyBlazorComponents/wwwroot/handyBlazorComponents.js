@@ -50,7 +50,7 @@ FORM_HANDLING = {
         isDirty = false;
         resetBeforeUnloads();
       });
-    }
+    };
 
     forms.forEach((f) => {
       trackFormDirtiness(f);
@@ -63,13 +63,13 @@ SESSION_FUNCTIONS = {
     let jwtTimeout = null;
     let idleTimer = null;
     let countDownInterval = null;
-    let startIdleTimerTimeout = undefined
+    let startIdleTimerTimeout = undefined;
     const resetAllTimers = () => {
       clearInterval(countDownInterval);
       clearTimeout(jwtTimeout);
       clearTimeout(idleTimer);
-      clearTimeout(startIdleTimerTimeout)
-    }
+      clearTimeout(startIdleTimerTimeout);
+    };
 
     const showSessionExpiredPopup = (msg) => {
       localStorage.removeItem(JWT_TOKEN_NAME);
@@ -92,7 +92,7 @@ SESSION_FUNCTIONS = {
             window.location.href = basePath;
           }
         });
-    }
+    };
 
     const monitorJwtToken = () => {
       clearTimeout(jwtTimeout);
@@ -102,7 +102,7 @@ SESSION_FUNCTIONS = {
         return;
       }
       let storedTimestamp = localStorage.getItem(JWT_TOKEN_EXP_DATE);
-      storedTimestamp ??= sessionStorage.getItem(JWT_TOKEN_EXP_DATE)
+      storedTimestamp ??= sessionStorage.getItem(JWT_TOKEN_EXP_DATE);
       //console.log('storedTimestamp: ' + storedTimestamp);
       if (!storedTimestamp) {
         // If there's no session expiration data, recheck in 10 seconds
@@ -117,7 +117,7 @@ SESSION_FUNCTIONS = {
       if (currentTime >= storedTimestamp) {
         // console.log('session expired');
         // Redirect to session expired page
-        
+
         // console.log('token expired');
         showSessionExpiredPopup("Your token has Expired.");
       } else {
@@ -126,7 +126,7 @@ SESSION_FUNCTIONS = {
         // console.log('timeLeft: ' + timeLeft);
         jwtTimeout = setTimeout(monitorJwtToken, timeLeft); // Re-check at expiration time
       }
-    }
+    };
 
     const startIdleTimer = () => {
       // give one minute warning
@@ -139,14 +139,13 @@ SESSION_FUNCTIONS = {
           else
               warningTime = timeout - 10000
       */
-      const getJwt = localStorage.getItem(JWT_TOKEN_NAME)
-      getJwt ??= sessionStorage.getItem(JWT_TOKEN_NAME)
+      let getJwt = localStorage.getItem(JWT_TOKEN_NAME);
+      getJwt ??= sessionStorage.getItem(JWT_TOKEN_NAME);
 
       // make sure to only run idletimer if user is authenticated
-      if (!getJwt)
-      {
+      if (!getJwt) {
         // check again in 10 seconds (I arbitrarily chose 10 seconds)
-        startIdleTimerTimeout = setTimeout(startIdleTimer, 10000)
+        startIdleTimerTimeout = setTimeout(startIdleTimer, 10000);
         return;
       }
 
@@ -236,7 +235,7 @@ SESSION_FUNCTIONS = {
 
       // Start the timer initially
       restartIdleTimer();
-    }
+    };
 
     if (!id || ![1, 2].includes(Number(id))) {
       return;
