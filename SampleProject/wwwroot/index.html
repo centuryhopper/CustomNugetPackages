@@ -30,39 +30,6 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/HandyBlazorComponents/handyBlazorComponents.js"></script>
-    <script>
-
-        //window.addEventListener('load', () => {
-        //    // Send data or cleanup
-        //    setTimeout(() => {
-        //        localStorage.setItem('closed', 'true');
-        //        localStorage.setItem('hi', 'yo');
-        //    }, 3000)
-        //});
-//
-        //window.addEventListener('unload', () => {
-        //    // Send data or cleanup
-        //    localStorage.removeItem('closed', 'true');
-        //    localStorage.removeItem('hi', 'yo');
-        //});
-        
-        function downloadFile(base64Data, contentType, fileName) {
-            const blob = new Blob([Uint8Array.from(atob(base64Data), c => c.charCodeAt(0))], { type: contentType });
-            const url = URL.createObjectURL(blob);
-        
-            // Create a temporary anchor element
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-        
-            // Trigger download and clean up
-            a.click();
-            URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        }
-    
-    </script>
 </body>
 
 </html>
