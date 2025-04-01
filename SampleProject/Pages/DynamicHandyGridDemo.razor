@@ -3,7 +3,7 @@
 @using Client.Services
 @using HandyBlazorComponents.Abstracts
 @using HandyBlazorComponents.Components.HandyGridTools
-@using SampleProject.TestComponents
+@* @using SampleProject.TestComponents *@
  
  
 <div class="m-5">
@@ -159,7 +159,7 @@
             EditModeFragments: [
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.Descriptions),
-                    Fragment: o => @<HandyMultiSelectCheckboxList TItem="TestClass" Items="states.ToList()" SelectedItems="o.Object.Descriptions" Placeholder="Select States" />),
+                    Fragment: o => @<HandyMultiSelectCheckboxListTest TItem="TestClass" Items="states.ToList()" SelectedItems="o.Object.Descriptions" Placeholder="Select States" />),
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.CheckBoxTest),
                     Fragment: o => @<HandyCheckbox TItem="TestClass" Item="o.Object" ColumnName="@(nameof(TestClass.CheckBoxTest))" />),

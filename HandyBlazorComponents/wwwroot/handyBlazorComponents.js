@@ -13,6 +13,8 @@ function handleBeforeUnload(event) {
   event.returnValue = "";
 }
 
+// IMPORTANT: Developers should only be calling methods within these objects below from blazor
+
 FORM_HANDLING = {
   getForms: () => {
     let forms = document.querySelectorAll("form");
@@ -60,9 +62,9 @@ FORM_HANDLING = {
 
 SESSION_FUNCTIONS = {
   run: (basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE) => {
-    let jwtTimeout = null;
-    let idleTimer = null;
-    let countDownInterval = null;
+    let jwtTimeout = undefined;
+    let idleTimer = undefined;
+    let countDownInterval = undefined;
     let startIdleTimerTimeout = undefined;
     const resetAllTimers = () => {
       clearInterval(countDownInterval);
@@ -154,9 +156,9 @@ SESSION_FUNCTIONS = {
       // 5 minutes
       const SESSION_DISPLAY_TIME_IN_MILLISECONDS = 300000;
       const warningTime =
-        timeout > SESSION_DISPLAY_TIME_IN_MILLISECONDS
+        idleTimeOut > SESSION_DISPLAY_TIME_IN_MILLISECONDS
           ? SESSION_DISPLAY_TIME_IN_MILLISECONDS
-          : timeout - 10000;
+          : idleTimeOut - 10000;
 
       function restartIdleTimer() {
         const showWarning = async () => {
@@ -199,11 +201,11 @@ SESSION_FUNCTIONS = {
 
         clearInterval(countDownInterval);
         clearTimeout(idleTimer);
-        idleTimer = null;
+        idleTimer = undefined;
         // show it in (timeout - warningTime milliseconds)
         // for example, if there's a total of 20 seconds of allowed idle time,
         // and the warning time is 15 seconds left then the pop up will appear 5 seconds after 20 second timer has started
-        idleTimer = setTimeout(showWarning, timeout - warningTime);
+        idleTimer = setTimeout(showWarning, idleTimeOut - warningTime);
       }
 
       // Reset timer on user activity
@@ -252,15 +254,16 @@ SESSION_FUNCTIONS = {
 };
 
 UI = {
+  // DEPRECATED because of blazor @onkeydown attribute
   // closes the multiselect when user presses escape
-  registerEscapeKeyHandler: (dotNetObject) => {
-    document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") {
-        // console.log('escape pressed');
-        dotNetObject.invokeMethod("CloseDropdown");
-      }
-    });
-  },
+  // registerEscapeKeyHandler: (dotNetObject) => {
+  //   document.addEventListener("keydown", function (event) {
+  //     if (event.key === "Escape") {
+  //       // console.log('escape pressed');
+  //       dotNetObject.invokeMethod("CloseDropdown");
+  //     }
+  //   });
+  // },
 };
 
 FILE = {
