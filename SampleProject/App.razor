@@ -14,12 +14,14 @@
     </Router>
 </CascadingValue>
 
-<NavigationCheckerTest @ref="navigationChecker" Seconds="@(15)"/>
+<NavigationChecker @ref="navigationChecker" Seconds="@(15)" />
 
 @code {
     private NavigationChecker navigationChecker = default!;
+    
     private async Task OnNavigateAsync(NavigationContext args)
     {
+        //Console.WriteLine("hello there");
         navigationChecker.SetPageDirtyValue(false);
         await HandyBlazorService.ResetFormStates();
     }
