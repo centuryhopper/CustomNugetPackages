@@ -61,7 +61,7 @@ FORM_HANDLING = {
 };
 
 SESSION_FUNCTIONS = {
-  run: (basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE) => {
+  run: (basePath, idleTimeOut, id, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE_NAME) => {
     let jwtTimeout = undefined;
     let idleTimer = undefined;
     let countDownInterval = undefined;
@@ -75,9 +75,9 @@ SESSION_FUNCTIONS = {
 
     const showSessionExpiredPopup = (msg) => {
       localStorage.removeItem(JWT_TOKEN_NAME);
-      localStorage.removeItem(JWT_TOKEN_EXP_DATE);
+      localStorage.removeItem(JWT_TOKEN_EXP_DATE_NAME);
       sessionStorage.removeItem(JWT_TOKEN_NAME);
-      sessionStorage.removeItem(JWT_TOKEN_EXP_DATE);
+      sessionStorage.removeItem(JWT_TOKEN_EXP_DATE_NAME);
       resetBeforeUnloads();
       resetAllTimers();
       swal
@@ -103,8 +103,8 @@ SESSION_FUNCTIONS = {
         //console.log("sweet alert pop up is open");
         return;
       }
-      let storedTimestamp = localStorage.getItem(JWT_TOKEN_EXP_DATE);
-      storedTimestamp ??= sessionStorage.getItem(JWT_TOKEN_EXP_DATE);
+      let storedTimestamp = localStorage.getItem(JWT_TOKEN_EXP_DATE_NAME);
+      storedTimestamp ??= sessionStorage.getItem(JWT_TOKEN_EXP_DATE_NAME);
       //console.log('storedTimestamp: ' + storedTimestamp);
       if (!storedTimestamp) {
         // If there's no session expiration data, recheck in 10 seconds

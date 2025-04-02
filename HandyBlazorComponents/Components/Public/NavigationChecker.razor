@@ -19,7 +19,7 @@
     [Parameter]
     public string JWT_TOKEN_NAME {get;set;} = "jwt";
     [Parameter]
-    public string JWT_TOKEN_EXP_DATE {get;set;} = "expDate";
+    public string JWT_TOKEN_EXP_DATE_NAME {get;set;} = "expDate";
     [Parameter]
     public string ReturnUrl {get;set;} = string.Empty;
 
@@ -33,11 +33,11 @@
         if (firstRender)
         {
             // test run of adding a dummy timestamp
-            // await jsRuntime.InvokeVoidAsync("localStorage.setItem", JWT_TOKEN_EXP_DATE, new DateTimeOffset(DateTime.Now.AddSeconds(55)).ToUnixTimeMilliseconds());
-            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.run", string.IsNullOrWhiteSpace(ReturnUrl) ? NavigationManager.BaseUri : ReturnUrl, 0, 1, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE);
+            // await jsRuntime.InvokeVoidAsync("localStorage.setItem", JWT_TOKEN_EXP_DATE_NAME, new DateTimeOffset(DateTime.Now.AddSeconds(55)).ToUnixTimeMilliseconds());
+            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.run", string.IsNullOrWhiteSpace(ReturnUrl) ? NavigationManager.BaseUri : ReturnUrl, 0, 1, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE_NAME);
  
             // converted seconds to milliseconds by multiplying by 1000
-            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.run", string.IsNullOrWhiteSpace(ReturnUrl) ? NavigationManager.BaseUri : ReturnUrl, Seconds * 1000, 2, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE);
+            await jsRuntime.InvokeVoidAsync("SESSION_FUNCTIONS.run", string.IsNullOrWhiteSpace(ReturnUrl) ? NavigationManager.BaseUri : ReturnUrl, Seconds * 1000, 2, JWT_TOKEN_NAME, JWT_TOKEN_EXP_DATE_NAME);
         }
     }
 }
