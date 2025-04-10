@@ -6,7 +6,7 @@
 @code {
  
     [Parameter]
-    public string LinkText {get;set;} = "View";
+    public string LinkText {get;set;} = "Download";
  
     [Parameter]
     public string Style {get;set;} = "color: blue; text-decoration: underline; cursor:pointer;";
@@ -14,7 +14,7 @@
     [Parameter]
     public byte[]? Contents {get;set;}
     [Parameter]
-    public string Name {get;set;} = string.Empty;
+    public string Name {get;set;} = "filename";
     [Parameter]
     public HandyDownloadType HandyDownloadType {get;set;} = HandyDownloadType.PDF;
     private string downloadType = string.Empty;

@@ -14,7 +14,7 @@
     [Parameter]
     public string Contents { get; set; } = string.Empty;
     [Parameter]
-    public string FileName { get; set; } = "data.csv";
+    public string FileName { get; set; } = "data";
 
     private async Task SaveAsFile()
     {
@@ -22,6 +22,8 @@
         {
             return;
         }
-        await jsRuntime.InvokeVoidAsync("FILE.saveAsFile", "data.csv", Contents);
+        await jsRuntime.InvokeVoidAsync("FILE.saveAsFile", FileName+".csv", Contents);
     }
 }
+
+

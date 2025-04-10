@@ -15,7 +15,7 @@
 @code {
     private bool IsPageDirty = false;
     [Parameter]
-    public int Seconds { get;set; } = 30;
+    public int Seconds { get;set; } = 30 * 60; // 1800 seconds is half an hour
     [Parameter]
     public string JWT_TOKEN_NAME {get;set;} = "jwt";
     [Parameter]

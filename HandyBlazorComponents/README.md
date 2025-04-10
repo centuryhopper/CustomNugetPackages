@@ -11,6 +11,26 @@ A collection of reusable Blazor components designed to simplify the development 
 - **Extensible**: Built to be extensible, allowing for custom modifications and enhancements.
 - Clean: Built with minimal dependencies from other third party libraries.
 
+enums:
+  - HandyModalType enum code:
+      public enum HandyModalType
+      {
+          ERROR,
+          WARNING,
+          SUCCESS,
+          INFO,
+      }
+  - HandyToastType enum code:
+    public enum HandyToastType
+    {
+        ERROR, // the toast will be red
+        WARNING, // the toast will be yellow
+        SUCCESS, // the toast will be green
+        INFO, // the toast will be a shade of blue
+    }
+
+
+
 ## Components
 
 Here’s a list of the components included in this library:
@@ -21,28 +41,23 @@ Here’s a list of the components included in this library:
     - <ConfirmModal @ref="confirmModal" Title="Warning"
     BodyText="Are you sure you want to delete this record? THIS ACTION IS IRREVERSIBLE!" />
       - Public methods:
+        - Task<bool> ShowAsync(string title, string bodyText, HandyModalType chosenModalType), returns a boolean of true if the user confirms or false if the user cancels
         - Task<bool> ShowAsync(), returns a boolean of true if the user confirms or false if the user cancels
       - Parameters:
-        - Title: String
-        - Warning: String
+        - Title: String (defaults to "Confirmation")
+        - BodyText: String (defaults to "Are you sure?")
+        - HandyModalType: HandyModalType (defaults to HandyModalType.INFO)
 - **NotificationModal**:
   - This is a pop up that allows you to customize information to display to the end user.
   - private NotificationModal notificationModal = default!;
   - <NotificationModal @ref="notificationModal" />
     - Public methods:
-        - Task ShowAsync(Title, Message, ModalType) awaits user confirmation to close the popup
-        - Parameters:
-          - Title: String
-          - Message: String
-          - ModalType: ModalType
-        - ModalType enum code:
-          - public enum ModalType
-            {
-                ERROR,
-                WARNING,
-                SUCCESS,
-                INFO,
-            }
+      - Task<bool> ShowAsync(string title, string bodyText, HandyModalType chosenModalType), returns a boolean of true if the user confirms or false if the user cancels
+      - Task<bool> ShowAsync(), returns a boolean of true if the user confirms or false if the user cancels
+    - Parameters:
+      - Title: String (defaults to "Confirmation")
+      - BodyText: String (defaults to "Are you sure?")
+      - HandyModalType: HandyModalType (defaults to HandyModalType.INFO)
 - **CooldownTimer**:
   - This is a tool that you can use to time out users (or hackers) who repeatedly try to access a secure resource.
   - <CooldownTimer @ref="cooldownTimer" CooldownTime="10" MaxAttempts="5" OnCooldownComplete="()=>StateHasChanged()" />
@@ -51,11 +66,12 @@ Here’s a list of the components included in this library:
     - Public getter:
       - IsCoolingDown, returns true if the CooldownTimer component is active
     - Parameters:
-          - CooldownTime: int
-          - MaxAttempts: int
+          - CooldownTime: int (defaults to 30 seconds)
+          - MaxAttempts: int (defaults to 5 attempts)
           - OnCooldownComplete: EventCallback (use this to call a function if needed once the cooldown completes)
 - **DynamicHandyGrid**:
   - This is a tool that you can use to display your collection of items in a grid view and perform crud operations on it.
+  - The documentation for this was pretty complicated to write so I will advise you check out my sample project example. I will make a youtube video on this soon.
   - You must wrap this component with a class that inherits from HandyGridStateAbstract
   - <DynamicHandyGrid @ref="dynamicHandyGrid" TItem="SomeClassThatYouCreate" Items="Items" />
 - **UploadComponent**:
@@ -206,34 +222,93 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
 
 - **HandyFileUpload**:
   - This is a dropdown that provides two way binding for any byte[] property in your entity that you may have
-  - <HandyDropdown TItem="TestClass" ColumnName="@(nameof(TestClass.File))" Item="o.Object" Style="width: 12rem;" />
+  - <HandyFileUpload TItem="TestClass" ColumnName="@(nameof(TestClass.File))" Item="o.Object" Style="width: 12rem;" />
   - Parameters:
       - TItem: The class name of your entity
       - ColumnName: The column name of your entity (property name)
       - Item: The HandyGridEntityAbstract Object you want this component to bind to.
       - Style: Gives you the freedom of styling this component using inline css
 
-- **HandyFileUpload**:
-  - This is a dropdown that provides two way binding for any byte[] property in your entity that you may have
+- **HandyToast**:
+  - This is a component that displays users a temporary pop up with the message of their choice
   - <HandyToast @ref="handyToast" Title="Success" Message="Your operation completed successfully." ToastType="HandyToastType.SUCCESS" Duration="5" />
+  - Public methods
+    - Task ShowToastAsync(string title, string message, HandyToastType toastType): Displays the toast pop up
   - Parameters:
       - ref: a reference to a HandyToast instance so that you can call its public method later
-      - Title: The title of this toast popup
-      - Message: The message you would like to inform the user from this toast popup
-      - Duration: The number of seconds you would like this toast popup to stay visible
-      - ToastType: The type of information this toast should identify as
-        - public enum HandyToastType
-          {
-              ERROR, // the toast will be red
-              WARNING, // the toast will be yellow
-              SUCCESS, // the toast will be green
-              INFO, // the toast will be a shade of blue
-          }
+      - Title: The title of this toast popup (defaults to "Notification")
+      - Message: The message you would like to inform the user from this toast popup (defaults to "This is a toast message.")
+      - Duration: The number of seconds you would like this toast popup to stay visible (defaults to 5 seconds)
+      - ToastType: The type of information this toast should identify as (defaults to HandyToastType.INFO)
   Example:
   - Here we show the pop up in a non-blocking and asynchronous way:
     - _ = handyToast.ShowToastAsync("Error", "Something went wrong. Please try again later...", HandyToastType.ERROR);
+  
+- **StackedHandyToast**:
+  - This is a component that displays users a temporary pop up with the message of their choice. If there are multiple messages need to be shown in quick succession, then the newer toasts will stack on top of older ones
+  - <StackedHandyToast @ref="stackedHandyToast" Title="Success" Message="Your operation completed successfully." ToastType="HandyToastType.SUCCESS" Position="HandyToastPosition.LEFT_ALIGN" Duration="5" />
+  - Public methods
+    - Task ShowToastAsync(string title, string message, HandyToastType toastType): Displays the toast pop up
+  - Parameters:
+      - ref: a reference to a HandyToast instance so that you can call its public method later
+      - Title: The title of this toast popup (defaults to "Notification")
+      - Message: The message you would like to inform the user from this toast popup (defaults to "This is a toast message.")
+      - Duration: The number of seconds you would like this toast popup to stay visible (defaults to 5 seconds)
+      - ToastType: The type of information this toast should identify as (defaults to HandyToastType.INFO)
+  Example:
+  - Here we show the pop up in a non-blocking and asynchronous way:
+    - _ = stackedHandyToast.ShowToastAsync("Error", "Something went wrong. Please try again later...", HandyToastType.ERROR);
 
-        
+- **DownloadComponent**:
+  - Users can utilize this component to download byte[] values to their local computer
+  - <DownloadComponent />
+  - Parameters:
+    - LinkText: The text to display to the user to signify that this is the text to click on to download (defaults to "Download")
+    - Style: The css style that developers can set to their liking (defaults to "color: blue; text-decoration: underline; cursor:pointer;")
+    - Contents: The byte array of contents that is passed to this component to be downloaded
+    - HandyDownloadType: The type of file that would be downloaded (defaults to HandyDownloadType.PDF)
+
+- **ObscureInput**:
+  - This component is useful for cases such as typing sensitive information (e.g. passwords) into an input box. Users will have the option to toggle showing/hiding their typed characters
+  - <ObscureInput />
+  - Parameters:
+    - Item: The name of your class object to bind to this input
+    - Style: The css style that developers can set to their liking (defaults to "width: 10rem")
+    - ColumnName: The case-sensitive property name of the object to be two-way binded to this input
+
+- **HandyFormTracker**:
+  - <HandyFormTracker />
+  - Add this to any page with a form. This component is essentially a wrapper around a javascript call that will keep track of the dirtiness of a form, meaning whether edits have been made to the form. If so then the user will get a confirmation popup whenever they navigate away from or refresh the page
+
+- **SaveAsFileComponent**:
+  - This component is useful for downloading a string of contents to a csv file
+  - <SaveAsFileComponent />
+  - Parameters:
+    - Text: The text to display to the user to signify that this is the text to click on to download (defaults to "Export as CSV")
+    - Style: The css style that developers can set to their liking (defaults to "btn btn-info m-1")
+    - Contents: The string of contents that will be downloaded to a .csv file. Please make sure your contents are comma delimited
+    - FileName: The name of your csv file (don't append .csv at the end. The component will do it for you)
+
+- **NavigationChecker**:
+  - This component will log the user out if the user either idles for too long or their jwt token has expired
+  - <NavigationChecker />
+    - Parameters:
+      - Seconds: The number of seconds of allowed idle time before logging the user out (defaults to 1800 seconds or half an hour). Please allow at least 20 to 30 minutes of idle time
+      - JWT_TOKEN_NAME: The key name of your jwt token when stored in the browser local storage/session storage
+      - JWT_TOKEN_EXP_DATE_NAME: The key name of your jwt expiration time stamp when stored in the browser local storage/session storage. Please be sure to store your jwt expiration timestamp in milliseconds
+  - Usage instructions:
+    - add this as a child of <head> tag:
+        - <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    - add this with the other script tags at the tail of the body tag:
+        - <script src="_content/FWC.HandyBlazorComponents/handyBlazorComponents.js"></script>
+    - add this in program.cs:
+      - using HandyBlazorComponents.Extensions;
+      - builder.Services.AddHandyBlazorServices();
+    - add this line to your _Imports.razor:
+      - @inject HandyBlazorService HandyBlazorService
+    - Now you can do something like the dirty form demo in the sample project I provided with adding a HandyFormTracker component etc.
+
+
 
 More will be added as per request, so feel free to create an issue.
 Contributions are welcome as well! Just create a pull request and I will take a look.
@@ -248,8 +323,10 @@ Configuration:
     @using HandyBlazorComponents.Utils
     @using HandyBlazorComponents.Models
     @using ModalType = HandyBlazorComponents.Utils.ModalType``
-
-- Add this to your index.html:
+    
+- Add this to your index.html as a child of your head tag:
+  You should at the latest version. In my case at the time of this writing, is ``<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>``
+- Add this to your index.html after your <script src="_framework/blazor.webassembly.js"></script>:
     ``<script src="_content/HandyBlazorComponents/handyBlazorComponents.js"></script>``
 
 This package is still actively under development and changes are constantly made so use at your own risk.
