@@ -259,6 +259,10 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
   - Here we show the pop up in a non-blocking and asynchronous way:
     - _ = stackedHandyToast.ShowToastAsync("Error", "Something went wrong. Please try again later...", HandyToastType.ERROR);
 
+- **HandyFormTracker**:
+  - <HandyFormTracker />
+  - Add this to any page with a form. This component is essentially a wrapper around a javascript call that will keep track of the dirtiness of a form, meaning whether edits have been made to the form. If so then the user will get a confirmation popup whenever they navigate away from or refresh the page
+
 - **DownloadComponent**:
   - Users can utilize this component to download byte[] values to their local computer
   - <DownloadComponent />
@@ -276,10 +280,7 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
     - Style: The css style that developers can set to their liking (defaults to "width: 10rem")
     - ColumnName: The case-sensitive property name of the object to be two-way binded to this input
 
-- **HandyFormTracker**:
-  - <HandyFormTracker />
-  - Add this to any page with a form. This component is essentially a wrapper around a javascript call that will keep track of the dirtiness of a form, meaning whether edits have been made to the form. If so then the user will get a confirmation popup whenever they navigate away from or refresh the page
-
+## Other Components
 - **SaveAsFileComponent**:
   - This component is useful for downloading a string of contents to a csv file
   - <SaveAsFileComponent />
