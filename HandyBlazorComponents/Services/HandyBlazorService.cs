@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json;
+using HandyBlazorComponents.Models;
 using Microsoft.JSInterop;
 
 namespace HandyBlazorComponents.Services;
@@ -11,6 +12,26 @@ public class HandyBlazorService
     public HandyBlazorService(IJSRuntime jsRuntime)
     {
         this.jsRuntime = jsRuntime;
+    }
+
+    public async Task DownloadFile(string base64, HandyDownloadType handyDownloadType, string fileName)
+    {
+        string downloadType = handyDownloadType switch
+        {
+            HandyDownloadType.PDF => "application/pdf",
+            HandyDownloadType.JPG => "image/jpg",
+            HandyDownloadType.PNG => "image/png",
+            _ => string.Empty,
+        };
+
+        fileName = handyDownloadType switch
+        {
+            HandyDownloadType.PDF => fileName + ".pdf",
+            HandyDownloadType.JPG => fileName + ".jpg",
+            HandyDownloadType.PNG => fileName + ".png",
+            _ => string.Empty,
+        };
+        await jsRuntime.InvokeVoidAsync("FILE.downloadFile", base64, downloadType, fileName);
     }
 
     /// <summary>

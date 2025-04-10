@@ -1,0 +1,50 @@
+<a style="@Style"
+    @onclick="@Download" 
+    >@LinkText</a>
+ 
+ 
+@code {
+ 
+    [Parameter]
+    public string LinkText {get;set;} = "View";
+ 
+    [Parameter]
+    public string Style {get;set;} = "color: blue; text-decoration: underline; cursor:pointer;";
+ 
+    [Parameter]
+    public byte[]? Contents {get;set;}
+    [Parameter]
+    public string Name {get;set;} = string.Empty;
+    [Parameter]
+    public HandyDownloadType HandyDownloadType {get;set;} = HandyDownloadType.PDF;
+    private string downloadType = string.Empty;
+ 
+    protected override void OnInitialized()
+    {
+        downloadType = HandyDownloadType switch
+        {
+            HandyDownloadType.PDF => "application/pdf",
+            HandyDownloadType.JPG => "image/jpg",
+            HandyDownloadType.PNG => "image/png",
+            _ => string.Empty,
+        };
+ 
+        Name = HandyDownloadType switch
+        {
+            HandyDownloadType.PDF => Name + ".pdf",
+            HandyDownloadType.JPG => Name + ".jpg",
+            HandyDownloadType.PNG => Name + ".png",
+            _ => string.Empty,
+        };
+    }
+ 
+    private async Task Download()
+    {
+        if (Contents is null)
+        {
+            return;
+        }
+        var base64 = Convert.ToBase64String(Contents);
+        await jsRuntime.InvokeVoidAsync("FILE.downloadFile", base64, downloadType, Name);
+    }
+}
