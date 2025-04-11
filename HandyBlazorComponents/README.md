@@ -308,6 +308,18 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
     - add this line to your _Imports.razor:
       - @inject HandyBlazorService HandyBlazorService
     - Now you can do something like the dirty form demo in the sample project I provided with adding a HandyFormTracker component etc.
+    - Call HandyBlazorService.ResetFormStates() in your App.razor's OnNavigateAsync() method, which would ensure that no forms are dirty each time you navigate to a new page
+    - Make sure
+
+
+C# Services:
+HandyBlazorService class:
+  - Once you have conducted dependency injection of an instance of this object to your blazor application, you then have several methods to your convenience
+  - Public methods:
+    - Task ResetFormStates(): Resets all forms to be clean
+    - Task StoreJwtExpiration(string jwtName, string jwtExpDateName, DateTime jwtExpDate): Adds your Jwt expiration timestamp to both your browser session and local storages. Will only do so if there's already a jwt token already stored in either the session or local storage
+    - Task DownloadFile(string base64, HandyDownloadType handyDownloadType, string fileName): downloads the file that you passed in as a base64
+    - More methods will potentially be added
 
 
 
