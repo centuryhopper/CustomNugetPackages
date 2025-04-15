@@ -1,0 +1,20 @@
+@page "/searchable-dropdown"
+
+@using SampleProject.TestComponents
+
+
+<div class="container">
+    <SearchableDropdown Items="@Cities" OnItemSelected="HandleCitySelected" Placeholder="Choose a city" />
+
+    <p class="m-3">You selected: @SelectedCity</p>
+</div>
+
+@code {
+    private List<string> Cities = ["", "New York", "London", "Paris", "Tokyo", "Berlin" ];
+    private string SelectedCity = string.Empty;
+
+    private void HandleCitySelected(string city)
+    {
+        SelectedCity = city;
+    }
+}

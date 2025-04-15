@@ -1,0 +1,4 @@
+To Create:
+    Searchable dropdown component -- DONE --
+    TinyMCE rich text editor component -- DONE --
+    Login Page component -- DONE --

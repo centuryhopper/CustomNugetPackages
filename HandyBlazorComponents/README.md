@@ -302,7 +302,7 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
     - add this as a child of <head> tag:
         - <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     - add this with the other script tags at the tail of the body tag:
-        - <script src="_content/FWC.HandyBlazorComponents/handyBlazorComponents.js"></script>
+        - <script src="_content/HandyBlazorComponents/handyBlazorComponents.js"></script>
     - add this in program.cs:
       - using HandyBlazorComponents.Extensions;
       - builder.Services.AddHandyBlazorServices();
@@ -318,6 +318,8 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
       {
           navigationChecker.SetPageDirtyValue(false);
           await HandyBlazorService.ResetFormStates();
+          await HandyBlazorService.StoreJwtExpiration(JwtConfig.JWT_TOKEN_NAME, JwtConfig.JWT_TOKEN_EXP_DATE_NAME,
+            JwtConfig.JWT_TOKEN_EXP_DATETIME);
       }
 
 
