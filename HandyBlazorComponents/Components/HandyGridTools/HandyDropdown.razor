@@ -8,7 +8,7 @@
     @* <option value="">Select @Placeholder</option> *@
     @foreach (var option in Options)
     {
-        <option value="@option">@option</option>
+        <option value="@option.Value">@option.Text</option>
     }
 </select>
 
@@ -24,7 +24,7 @@
     public string ColumnName { get; set; } = null!;
 
     [Parameter]
-    public List<string> Options { get; set; } = [];
+    public List<HandyNamedTuple> Options { get; set; } = [];
 
     private string? SelectedValue { get; set; }
 

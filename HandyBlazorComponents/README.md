@@ -292,6 +292,7 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
 
 - **NavigationChecker**:
   - This component will log the user out if the user either idles for too long or their jwt token has expired
+  - This component should only be placed in the App.razor
   - <NavigationChecker />
     - Parameters:
       - Seconds: The number of seconds of allowed idle time before logging the user out (defaults to 1800 seconds or half an hour). Please allow at least 20 to 30 minutes of idle time
@@ -308,8 +309,16 @@ Here are the two abstract classes you would use for the DynamicHandyGrid compone
     - add this line to your _Imports.razor:
       - @inject HandyBlazorService HandyBlazorService
     - Now you can do something like the dirty form demo in the sample project I provided with adding a HandyFormTracker component etc.
-    - Call HandyBlazorService.ResetFormStates() in your App.razor's OnNavigateAsync() method, which would ensure that no forms are dirty each time you navigate to a new page
-    - Make sure
+    - In your App.razor, make sure your Router tag has a method bound to its OnNavigateAsync parameter like so:
+      <Router AppAssembly="@typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+    - Make sure to wrap your App.razor with a cascading value:
+      - <CascadingValue Value="navigationChecker" Name="@(nameof(NavigationChecker))">
+    - Call HandyBlazorService.ResetFormStates() in your App.razor's OnNavigateAsync() method, which would ensure that no forms are dirty each time you navigate to a new page:
+      private async Task OnNavigateAsync(NavigationContext args)
+      {
+          navigationChecker.SetPageDirtyValue(false);
+          await HandyBlazorService.ResetFormStates();
+      }
 
 
 C# Services:
