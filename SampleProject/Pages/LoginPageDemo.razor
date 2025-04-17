@@ -11,9 +11,9 @@
         //Console.WriteLine(model.Password);
         if (model.Email != "test@email.com" || model.Password != "password")
         {
-            return new LoginResponse(false, null!, "Incorrect email or password");
+            return new HandyLoginResponse(false, null!, "Incorrect email or password");
         }
         await Task.Delay(3000);
-        return new LoginResponse(Flag: true, Token: "dummy token", Message: "login success!");
+        return new HandyLoginResponse(Flag: true, Token: "dummy token", Message: "login success!");
     })"
 />
