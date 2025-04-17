@@ -1,15 +1,15 @@
 using HandyBlazorComponents.Abstracts;
 using HandyBlazorComponents.Models;
 using Microsoft.AspNetCore.Components;
-using static HandyBlazorComponents.Models.ServiceResponses;
- 
+using static HandyBlazorComponents.Models.HandyServiceResponses;
+
 namespace HandyBlazorComponents.Abstracts;
- 
+
 public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbstract<U> where U : class, new()
 {
     public List<T> Items;
     public List<string> Columns => typeof(U).GetProperties().Select(prop => prop.Name).ToList();
-    public virtual GridValidationResponse ValidationChecks(T item)
+    public virtual HandyGridValidationResponse ValidationChecks(T item)
     {
         foreach (var key in ErrorMessagesDict.Keys)
         {
@@ -17,9 +17,9 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
         }
         return default!;
     }
- 
-    public List<NamedRenderFragment<T>>? EditModeFragments;
-    public List<NamedRenderFragment<T>>? ViewModeFragments;
+
+    public List<HandyNamedRenderFragment<T>>? EditModeFragments;
+    public List<HandyNamedRenderFragment<T>>? ViewModeFragments;
     public List<string> ReadonlyColumns;
     public string ExampleFileUploadUrl;
     public bool Exportable;
@@ -28,21 +28,21 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
     public bool ShowFilters;
     public int PageSize;
     public List<string> ColumnsToHide;
- 
+
     public EventCallback<IEnumerable<T>> SubmitFileAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnSubmitFile);
     public Func<IEnumerable<T>, Task>? OnSubmitFile;
     public EventCallback<IEnumerable<T>> OnCreateAction => EventCallback.Factory.Create<IEnumerable<T>>(this, OnCreate);
     public Func<IEnumerable<T>, Task>? OnCreate;
- 
+
     public EventCallback<T> OnUpdateAction => EventCallback.Factory.Create<T>(this, OnUpdate);
     public Func<T, Task>? OnUpdate;
- 
+
     public EventCallback<T> OnDeleteAction => EventCallback.Factory.Create<T>(this, OnDelete);
     public Func<T, Task>? OnDelete;
     public Dictionary<string, List<string>> ErrorMessagesDict = new();
     public string AddNewItemsText;
     public bool CanAddNewItems;
- 
+
     public HandyGridStateAbstract(List<T> Items,
         int PageSize = 5,
         bool CanAddNewItems = true,
@@ -58,8 +58,8 @@ public abstract class HandyGridStateAbstract<T, U> where T : HandyGridEntityAbst
         Func<IEnumerable<T>, Task>? OnSubmitFile = null,
         List<string>? ColumnsToHide = null,
         List<string>? ReadonlyColumns = null,
-        List<NamedRenderFragment<T>>? ViewModeFragments = null,
-        List<NamedRenderFragment<T>>? EditModeFragments = null
+        List<HandyNamedRenderFragment<T>>? ViewModeFragments = null,
+        List<HandyNamedRenderFragment<T>>? EditModeFragments = null
     )
     {
         this.CanAddNewItems = CanAddNewItems;

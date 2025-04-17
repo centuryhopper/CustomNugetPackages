@@ -86,7 +86,7 @@
     [Parameter]
     public string RedirectLink {get;set;} = string.Empty;
     [Parameter]
-    public Func<HandyLoginModel, Task<LoginResponse>> LoginCallBack {get;set;} 
+    public Func<HandyLoginModel, Task<HandyLoginResponse>> LoginCallBack {get;set;} 
     private CooldownTimer cooldownTimer = default!;
     private HandyLoginModel handyLoginModel = new();
     private bool isPasswordVisible = false;
