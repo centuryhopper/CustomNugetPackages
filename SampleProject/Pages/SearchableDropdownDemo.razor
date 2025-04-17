@@ -1,20 +1,30 @@
 @page "/searchable-dropdown"
 
-@using SampleProject.TestComponents
+@* @using SampleProject.TestComponents *@
 
 
 <div class="container">
-    <SearchableDropdown Items="@Cities" OnItemSelected="HandleCitySelected" Placeholder="Choose a city" />
+    <SearchableDropdown Options="@Cities" Placeholder="Choose a city" OnOptionSelected="@((city) => {
+        testClass.Description = city;
+    })" />
 
-    <p class="m-3">You selected: @SelectedCity</p>
+    <p class="m-3">You selected: @testClass.Description</p>
 </div>
 
 @code {
-    private List<string> Cities = ["", "New York", "London", "Paris", "Tokyo", "Berlin" ];
+    private List<HandyNamedTuple> Cities = [
+        new(Text: "", Value: ""),
+        new(Text: "New York", Value: "New York"),
+        new(Text: "London", Value: "London"),
+        new(Text: "Paris", Value: "Paris"),
+        new(Text: "Tokyo", Value: "Tokyo"),
+        new(Text: "Berlin", Value: "Berlin"),
+    ];
     private string SelectedCity = string.Empty;
 
-    private void HandleCitySelected(string city)
+    private TestClass testClass = new()
     {
-        SelectedCity = city;
-    }
+        Title = "test",
+        Description = string.Empty,
+    };
 }

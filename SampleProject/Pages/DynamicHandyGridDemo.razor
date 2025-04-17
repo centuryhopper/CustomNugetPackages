@@ -170,7 +170,7 @@
  
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.DropdownTest),
-                    Fragment: o => @<HandyDropdown TItem="TestClass" Item="o.Object" ColumnName="@(nameof(TestClass.DropdownTest))" Style="width: 12rem;" Options="@(["", "a", "b", "c"])"/>),
+                    Fragment: o => @<HandyDropdown TItem="TestClass" Item="o.Object" ColumnName="@(nameof(TestClass.DropdownTest))" Style="width: 12rem;" Options="@([new(Text: "", Value: ""), new(Text: "a", Value: "a"), new(Text: "b", Value: "b"), new(Text: "c", Value: "c")])"/>),
  
                 new NamedRenderFragment<HandyGridEntity>(
                     Name: nameof(TestClass.TextAreaTest),

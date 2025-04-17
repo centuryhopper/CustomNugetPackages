@@ -1,0 +1,19 @@
+@page "/login-page-demo"
+
+
+<LoginComponent
+    NoticeText="@("The correct email and passwords are \"test@email.com\" and \"password\", respectively. You will be redirected to homepage (or the url path of your choice) if login is successful. Otherwise you will be told \"Incorrect email or password\".")"
+    RedirectLink=""
+    CooldownSeconds="5"
+    MaxAttempts="5"
+    LoginCallBack="@(async (model) => {
+        //Console.WriteLine(model.Email);
+        //Console.WriteLine(model.Password);
+        if (model.Email != "test@email.com" || model.Password != "password")
+        {
+            return new LoginResponse(false, null!, "Incorrect email or password");
+        }
+        await Task.Delay(3000);
+        return new LoginResponse(Flag: true, Token: "dummy token", Message: "login success!");
+    })"
+/>

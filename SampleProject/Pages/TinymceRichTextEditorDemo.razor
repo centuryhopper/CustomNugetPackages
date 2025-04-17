@@ -1,0 +1,26 @@
+@* @page "/rich-text-editor-demo"
+
+<div class="container">
+    <TinymceTextEditor TItem="TestClass" Item="testClass" ColumnName="@(nameof(TestClass.Description))" Label="This is an example of using a customized wrapper version of the tiny mce rich text editor:" OnEditorSave="@((value) => {
+        testClass.Description = value;
+    })" OnPageDirtyChanged="@((value) => {
+        NavigationChecker.SetPageDirtyValue(true);
+        testClass.Description = value;
+    })" />
+    <p class="m-3">Your code in html format:</p>
+</div>
+<div class="container">
+    @(new MarkupString(testClass.Description))
+</div>
+
+
+
+
+@code {
+
+    [CascadingParameter(Name = nameof(NavigationChecker))]
+    public NavigationChecker NavigationChecker {get;set;}
+
+    private TestClass testClass = new();
+
+} *@

@@ -1,5 +1,6 @@
-@using TinyMCE.Blazor
-@typeparam TItem where TItem : class, new()
+@* TODO: Copy over to FWC Handyblazorcomponents *@
+
+@* @typeparam TItem where TItem : class, new()
  
 @if (!string.IsNullOrWhiteSpace(Label))
 {
@@ -8,7 +9,7 @@
     </div>
 }
  
-<Editor ScriptSrc="lib/tinymce/tinymce.min.js" Value="@EditorContent" ValueChanged="@((e) => OnValueChanged(e))" LicenseKey="gpl" Conf="EditorConf"/>
+<Editor ScriptSrc="@ScriptSrc" Value="@EditorContent" ValueChanged="OnValueChanged" LicenseKey="gpl" Conf="EditorConf"/>
  
 <button class="btn btn-primary m-3" @onclick="SaveInfo">Confirm Changes</button>
  
@@ -20,6 +21,9 @@
         {"toolbar", "image | undo redo | media | code | forecolor backcolor"},
         {"image_file_types" , "jpg, .png"},
     };
+
+    [Parameter]
+    public string ScriptSrc {get;set;} = "lib/tinymce/tinymce.min.js";
  
     [Parameter]
     public string? Label  {get;set;} = null!;
@@ -65,4 +69,4 @@
     {
         return typeof(TItem).GetProperty(propertyName)?.GetValue(item)?.ToString();
     }
-}
+} *@

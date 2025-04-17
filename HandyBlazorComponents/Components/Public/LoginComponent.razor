@@ -2,7 +2,7 @@
 @inject NavigationManager NavigationManager
 
 @* TODO: copy over to fwc HandyBlazorComponents *@
-<div class="container-fluid">
+<div class="container">
     <EditForm Model="@handyLoginModel" OnValidSubmit="HandleSubmit">
         <div class="card">
             <h4 class="card-header">Login</h4>
@@ -39,7 +39,7 @@
                 </label>
             </p>
             <p class="m-3">
-                <button disabled="@loading" class="btn btn-primary">
+                <button disabled="@(cooldownTimer?.IsCoolingDown ?? false)" class="btn btn-primary">
                     @if (loading)
                     {
                         <span class="spinner-border spinner-border-sm mr-1"></span>
@@ -52,6 +52,13 @@
                         @errMsg
                     </p>
                 }
+
+                @if (!string.IsNullOrWhiteSpace(attemptsNotice))
+                {
+                    <p class="text-danger m-3">
+                        @attemptsNotice
+                    </p>
+                }
             </p>
         </div>
     </EditForm>
@@ -62,9 +69,18 @@
     </p>
 </div>
 
-<CooldownTimer @ref="cooldownTimer" CooldownTime="30" MaxAttempts="5" OnCooldownComplete="OnCooldownComplete" />
+<CooldownTimer @ref="cooldownTimer" CooldownTime="CooldownSeconds" MaxAttempts="MaxAttempts" OnCooldownComplete="@(() => {
+    attempts = 0;
+    errMsg = ""; // Clear any previous error messages
+    attemptsNotice = "";
+    StateHasChanged();
+})" />
 
 @code {
+    [Parameter]
+    public int CooldownSeconds {get;set;} = 30;
+    [Parameter]
+    public int MaxAttempts {get;set;} = 5;
     [Parameter]
     public string NoticeText {get;set;} = string.Empty;
     [Parameter]
@@ -79,11 +95,9 @@
     private bool loading = false;
 
     private string errMsg = "";
+    private string attemptsNotice = "";
+    private int attempts = 0;
 
-    private void OnCooldownComplete()
-    {
-        StateHasChanged();
-    }
 
     private void TogglePasswordVisibility(MouseEventArgs mouseEventArgs)
     {
@@ -105,34 +119,21 @@
 
     private async Task HandleSubmit()
     {
-        if (cooldownTimer.IsCoolingDown)
-        {
-            errMsg = "";
-            return;
-        }
-
         loading = true;
         errMsg = ""; // Clear any previous error messages
-
+        attemptsNotice = "";
         // Handle login logic here
-        // Console.WriteLine("showing modal");
+        //Console.WriteLine(MaxAttempts);
+        attempts += 1;
         var loginCallBack = await LoginCallBack(handyLoginModel);
         loading = false;
         if (!loginCallBack.Flag)
         {
             cooldownTimer.IncrementSubmissionCount();
-            //notificationModal.Show("Error", response.Message, ModalType.ERROR);
-            //Console.WriteLine(response.Message);
-            if (!cooldownTimer.IsCoolingDown)
-            {
-                errMsg = loginCallBack.Message;
-            }
+            errMsg = loginCallBack.Message;
+            attemptsNotice = $"{attempts} of {MaxAttempts} attempts";
             return;
         }
         NavigationManager.NavigateTo(RedirectLink, true);
-    }
-    private async Task HandleErrors()
-    {
-        Console.WriteLine("error!");
     }
 }
