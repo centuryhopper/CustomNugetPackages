@@ -123,7 +123,7 @@
         errMsg = ""; // Clear any previous error messages
         attemptsNotice = "";
         // Handle login logic here
-        //Console.WriteLine(MaxAttempts);
+        // Console.WriteLine(MaxAttempts);
         attempts += 1;
         var loginCallBack = await LoginCallBack(handyLoginModel);
         loading = false;
@@ -132,8 +132,9 @@
             cooldownTimer.IncrementSubmissionCount();
             errMsg = loginCallBack.Message;
             attemptsNotice = $"{attempts} of {MaxAttempts} attempts";
+            loginCallBack.OnFailure?.Invoke();
             return;
         }
-        NavigationManager.NavigateTo(RedirectLink, true);
+        loginCallBack.OnSuccess?.Invoke();
     }
 }
