@@ -19,18 +19,31 @@
         ---make the handytoast messages appear in a stack-like fashion---
 *@
 
-<span>Show</span>
-<select value="@HandyGridState.PageSize" @onchange="@(e => OnPageSizeChange(e))">
-    <option value="">-- Select --</option>
-    @foreach (var pgSize in new List<int> { 5, 10, 25, 50, 100 })
-    {
-        <option value="@pgSize">@pgSize</option>
+<style>
+    .handy-grid-page {
+        height: calc(100vh - 160px);
+        /* header + footer safe */
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 1rem;
     }
-</select>
-<span>entries</span>
-<div class="text-center overflow-auto m-3">
+</style>
 
-    <table class="table table-striped table-bordered">
+
+<span>
+    Show
+</span>
+    <select value="@HandyGridState.PageSize.ToString()" @onchange="@(e => OnPageSizeChange(e))" class="form-select" style="width: 25%">
+        <option value="">-- Select --</option>
+        @foreach (var pgSize in new List<int> { 5, 10, 25, 50, 100 })
+        {
+            <option value="@pgSize">@pgSize</option>
+        }
+    </select>
+<span>entries</span>
+
+<div class="text-center overflow-auto m-3">
+    <table class="table table-striped table-bordered" style="overflow: auto;">
         <thead>
             <tr>
                 @if (HandyGridState.ShowRowIndex)
@@ -182,6 +195,7 @@
     </div>
 </div>
 
+
 @code {
 
     private ConfirmModal confirmModal = default!;
@@ -240,9 +254,10 @@
     private async Task OnPageSizeChange(ChangeEventArgs value)
     {
         // default to page size of 5
-        HandyGridState.PageSize = Convert.ToInt32(string.IsNullOrEmpty(value.Value?.ToString()) ? "5" : value.Value?.ToString());
+        Console.WriteLine(pageSize);
+        HandyGridState.PageSize = Convert.ToInt32(string.IsNullOrEmpty(value.Value?.ToString()) ? "5" :
+        value.Value?.ToString());
         UpdatePagedItems();
-        //Console.WriteLine(pageSize);
     }
 
     private async Task AddNewItems()
@@ -343,7 +358,7 @@
     private bool FilterQuery(TEntity item)
     {
         bool nullOrWhiteSpaceCheck = FilterValues.Values.All(
-            filter => string.IsNullOrWhiteSpace(filter)
+        filter => string.IsNullOrWhiteSpace(filter)
         );
 
         if (nullOrWhiteSpaceCheck)

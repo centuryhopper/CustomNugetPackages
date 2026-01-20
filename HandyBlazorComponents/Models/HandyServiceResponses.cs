@@ -12,6 +12,6 @@ public class HandyServiceResponses
 
     public record class HandyGeneralResponseWithPayload(bool Flag, string Message, string Payload);
 
-    public record class HandyLoginResponse(bool Flag, string Message, Action OnSuccess, Action OnFailure);
+    public record class HandyLoginResponse(bool Flag, string Message, Action? OnSuccess, Action? OnFailure);
 }
 
